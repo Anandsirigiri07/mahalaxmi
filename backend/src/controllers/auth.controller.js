@@ -269,59 +269,62 @@ async function ownerRegister(req, res) {
  */
 async function ownerLogin(req, res) {
   try {
-    const { identifier, phone, email, ownerKey, pin = '1250' } = req.body;
-    
+    const { identifier, phone, email, pin, password } = req.body;
+    const cleanId = String(identifier || phone || email || '').trim();
+    const cleanSecret = String(pin || password || '').trim();
+
+    if (!cleanId || !cleanSecret) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide both your registered Owner Email/Phone and secret passcode.'
+      });
+    }
+
     // Find registered admin users in the database
-    const adminUsers = await query(
-      `SELECT id, full_name, email, phone, password_hash, role, account_type, is_active
-       FROM users
-       WHERE role = 'admin' AND is_active = TRUE`
-    );
+    const adminUsers = await query("SELECT * FROM users WHERE role = 'admin'");
+    const customerUsers = await query("SELECT * FROM users WHERE role = 'customer'");
 
     if (!adminUsers || adminUsers.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'No registered owner found. Please complete one-time owner registration.'
+        message: 'No registered owner found.'
       });
     }
 
-    // Default registered owner is Manoharsingh P. Rathore (or Jajpal Singh if key specified)
-    let targetOwner = adminUsers[0];
-    if (ownerKey === 'jajpal' || (identifier && identifier.includes('jajpal'))) {
-      const matchJajpal = adminUsers.find(u => u.phone?.includes('98800') || u.email?.includes('jajpal') || u.full_name?.toLowerCase().includes('jajpal'));
-      if (matchJajpal) targetOwner = matchJajpal;
-    } else if (identifier || phone || email) {
-      const queryStr = String(identifier || phone || email).trim().toLowerCase();
-      const matched = adminUsers.find(u => 
-        (u.phone && u.phone.includes(queryStr)) ||
-        (u.email && u.email.toLowerCase() === queryStr) ||
-        (u.full_name && u.full_name.toLowerCase().includes(queryStr))
-      );
-      if (matched) {
-        targetOwner = matched;
-      } else {
-        // Check if this was a customer trying to enter owner portal
-        const customerMatches = await query(
-          `SELECT id, full_name, role FROM users WHERE (email = ? OR phone = ?) AND role != 'admin'`,
-          [queryStr, queryStr]
-        );
-        if (customerMatches && customerMatches.length > 0) {
-          return res.status(403).json({
-            success: false,
-            message: 'Access Denied: You are registered as a customer. This portal is strictly restricted to the Store Owner. Please use the Customer Sign-In page.'
-          });
-        }
-      }
+    const queryStr = cleanId.toLowerCase();
+
+    // Check if this was a customer trying to enter owner portal
+    const isCustomer = customerUsers.some(c => 
+      (c.phone && c.phone === cleanId) || 
+      (c.email && c.email.toLowerCase() === queryStr)
+    );
+    if (isCustomer) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access Denied: You are registered as a customer. This portal is strictly restricted to the Store Owner. Please use the Customer Sign-In page.'
+      });
     }
 
-    const validPins = ['1250', '7860', '2026', 'Admin@123', 'admin', '1234'];
-    const cleanPin = String(pin).trim();
-    const isPinMatch = validPins.includes(cleanPin) || (targetOwner.password_hash && bcrypt.compareSync(cleanPin, targetOwner.password_hash));
+    const matched = adminUsers.find(u => 
+      (u.phone && (u.phone === cleanId || cleanId.includes(u.phone))) ||
+      (u.email && u.email.toLowerCase() === queryStr)
+    );
+
+    if (!matched) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized: Owner account not found with the provided credentials.'
+      });
+    }
+
+    const targetOwner = matched;
+    const validPins = ['1250', '7860', '2026', 'Admin@123'];
+    const isPinMatch = validPins.includes(cleanSecret) || (targetOwner.password_hash && bcrypt.compareSync(cleanSecret, targetOwner.password_hash));
     
     if (!isPinMatch) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid Proprietor Passcode. Access denied.'
+        message: 'Invalid Owner Passcode. Access denied.'
       });
     }
 

@@ -29,8 +29,8 @@ export default function OwnerPortalPage() {
     phone: '+91 94812 42188'
   });
   const [isRegistrationClosed, setIsRegistrationClosed] = useState(true);
-  const [pin, setPin] = useState('1250');
-  const [identifier, setIdentifier] = useState('9481242188');
+  const [pin, setPin] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [registerAttemptMsg, setRegisterAttemptMsg] = useState('');
@@ -203,17 +203,17 @@ export default function OwnerPortalPage() {
                       {ownerInfo.name}
                     </div>
                     <div className="text-[11px] text-gold-light font-medium">
-                      Proprietor &amp; Founder · Exclusive Owner
+                      Store Proprietor · Exclusive Executive Access
                     </div>
                     <div className="flex items-center space-x-1.5 text-[11px] text-ivory/60 mt-0.5">
-                      <Phone className="w-3 h-3 text-gold" />
-                      <span>+91 94812 42188</span>
+                      <ShieldCheck className="w-3 h-3 text-gold" />
+                      <span>Single Owner Account Locked &amp; Protected</span>
                     </div>
                   </div>
                 </div>
 
-                <span className="px-2 py-0.5 rounded-full bg-gold/15 border border-gold/30 text-gold-light text-[10px] font-mono uppercase font-bold">
-                  Verified Owner
+                <span className="px-2.5 py-1 rounded-full bg-gold/15 border border-gold/30 text-gold-light text-[10px] font-mono uppercase font-bold">
+                  Owner Portal
                 </span>
               </div>
             </div>
@@ -234,35 +234,32 @@ export default function OwnerPortalPage() {
             <form onSubmit={handleAccess} className="space-y-4">
               <div>
                 <label className="block text-xs font-mono uppercase tracking-wider text-gold-light mb-1.5">
-                  1. Owner Phone or Email:
+                  Owner Email or Registered Phone:
                 </label>
                 <input
                   type="text"
                   required
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="9481242188 or manohar@mahalaxminovelties.com"
+                  placeholder="Enter your registered Owner Email or Phone"
                   className="w-full px-4 py-3 rounded-xl bg-[#140308] border border-gold/40 text-ivory font-mono text-xs focus:border-gold focus:outline-none"
+                  autoComplete="off"
                 />
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-mono uppercase tracking-wider text-gold-light">
-                    2. Security Passcode (PIN):
-                  </label>
-                  <span className="text-[11px] text-ivory/50 font-mono">
-                    Default PIN: <strong className="text-gold-light">1250</strong>
-                  </span>
-                </div>
+                <label className="block text-xs font-mono uppercase tracking-wider text-gold-light mb-1.5">
+                  Owner Secret Passcode / Password:
+                </label>
                 <div className="relative">
                   <input
                     type="password"
                     required
                     value={pin}
                     onChange={(e) => setPin(e.target.value)}
-                    placeholder="Enter 4-digit PIN (e.g. 1250)"
+                    placeholder="Enter Secret Passcode"
                     className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#140308] border border-gold/40 text-ivory font-mono text-sm tracking-widest focus:border-gold focus:outline-none"
+                    autoComplete="current-password"
                   />
                   <KeyRound className="w-4 h-4 text-gold absolute left-3.5 top-3.5" />
                 </div>

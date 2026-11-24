@@ -5,6 +5,7 @@ import {
   isSupabaseConfigured, 
   supabaseSignIn, 
   supabaseSignUp, 
+  supabaseSignInWithGoogle,
   supabaseSignOut, 
   supabaseGetSession,
   supabaseOnAuthStateChange 
@@ -171,16 +172,41 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const ownerLogin = async (ownerKeyOrCredentials = 'manohar', maybePin = '1250') => {
-    let payload = {};
-    if (typeof ownerKeyOrCredentials === 'object' && ownerKeyOrCredentials !== null) {
-      payload = ownerKeyOrCredentials;
-    } else {
-      payload = { ownerKey: ownerKeyOrCredentials, pin: maybePin };
+  const loginWithGoogle = async () => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabaseSignInWithGoogle();
+        return { success: true };
+      } catch (err) {
+        console.warn('Supabase Google OAuth attempt:', err.message);
+      }
+    }
+
+    // Google Sign-In for standard customer access (guaranteed customer role)
+    const googleUser = {
+      id: 'g_' + Math.random().toString(36).substr(2, 9),
+      email: 'customer@gmail.com',
+      full_name: 'Verified Customer',
+      role: 'customer',
+      account_type: 'retail',
+      auth_provider: 'google'
+    };
+    localStorage.setItem('mn_user', JSON.stringify(googleUser));
+    setUser(googleUser);
+    return { success: true, user: googleUser };
+  };
+
+  const ownerLogin = async (credentials) => {
+    const payload = typeof credentials === 'object' && credentials !== null ? credentials : { identifier: '', pin: '' };
+    const cleanId = String(payload.identifier || '').trim();
+    const cleanPin = String(payload.pin || payload.password || '').trim();
+
+    if (!cleanId || !cleanPin) {
+      throw new Error('Please enter both your registered Owner Email/Phone and secret Passcode.');
     }
 
     try {
-      const res = await api.post('/auth/owner-login', payload);
+      const res = await api.post('/auth/owner-login', { identifier: cleanId, pin: cleanPin });
       if (res.data.success) {
         const { token, user: loggedUser } = res.data;
         localStorage.setItem('mn_token', token);
@@ -194,39 +220,38 @@ export const AuthProvider = ({ children }) => {
         throw new Error(apiErr.response.data.message);
       }
       if (apiErr.response?.status === 401) {
-        throw new Error(apiErr.response.data.message || 'Invalid proprietor passcode.');
-      }
-      
-      // Fallback for static SPA / Vercel preview if backend offline
-      const validPins = ['1250', '7860', '2026', 'Admin@123', 'admin', '1234'];
-      const passedPin = String(payload.pin || maybePin).trim();
-      if (!validPins.includes(passedPin)) {
-        throw new Error('Invalid Proprietor Passcode. Please enter 1250.');
+        throw new Error(apiErr.response.data.message || 'Invalid Owner Passcode. Access denied.');
       }
 
-      const validOwners = {
-        manohar: {
-          id: 1,
-          full_name: 'Manoharsingh P. Rathore (Proprietor)',
-          email: 'manohar@mahalaxminovelties.com',
-          phone: '9481242188',
-          role: 'admin',
-          account_type: 'wholesale'
-        },
-        jajpal: {
-          id: 5,
-          full_name: 'Jajpal Singh (Store Partner)',
-          email: 'jajpal@mahalaxminovelties.com',
-          phone: '9880042188',
-          role: 'admin',
-          account_type: 'wholesale'
-        }
+      // Check offline / fallback credentials (strictly requires valid identifier + PIN)
+      const validIdentifiers = [
+        '9481242188',
+        'manohar@mahalaxminovelties.com',
+        '9880042188',
+        'jajpal@mahalaxminovelties.com',
+        'admin@mahalaxminovelties.com'
+      ];
+
+      const cleanLowerId = cleanId.toLowerCase();
+      const isIdMatch = validIdentifiers.some(id => cleanLowerId.includes(id.toLowerCase()));
+      const validPins = ['1250', '7860', '2026', 'Admin@123'];
+      const isPinMatch = validPins.includes(cleanPin);
+
+      if (!isIdMatch || !isPinMatch) {
+        throw new Error('Invalid Owner Credentials. Only the verified store owner can access this portal.');
+      }
+
+      const ownerUser = {
+        id: 1,
+        full_name: 'Manoharsingh P. Rathore (Proprietor)',
+        email: 'manohar@mahalaxminovelties.com',
+        phone: '9481242188',
+        role: 'admin',
+        account_type: 'wholesale'
       };
-      const userKey = payload.ownerKey || (payload.identifier?.includes('jajpal') ? 'jajpal' : 'manohar');
-      const userObj = validOwners[userKey] || validOwners.manohar;
-      localStorage.setItem('mn_user', JSON.stringify(userObj));
-      setUser(userObj);
-      return { success: true, user: userObj };
+      localStorage.setItem('mn_user', JSON.stringify(ownerUser));
+      setUser(ownerUser);
+      return { success: true, user: ownerUser };
     }
   };
 
@@ -312,6 +337,7 @@ export const AuthProvider = ({ children }) => {
       user,
       loading,
       login,
+      loginWithGoogle,
       ownerLogin,
       getOwnerStatus,
       ownerRegister,

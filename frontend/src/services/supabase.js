@@ -74,6 +74,23 @@ export async function supabaseSignIn({ email, password }) {
 }
 
 /**
+ * Sign in user via Google OAuth (Supabase)
+ */
+export async function supabaseSignInWithGoogle() {
+  if (supabaseInstance) {
+    const { data, error } = await supabaseInstance.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/account`
+      }
+    });
+    if (error) throw error;
+    return data;
+  }
+  return null;
+}
+
+/**
  * Sign out current user from Supabase Auth
  */
 export async function supabaseSignOut() {

@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=390, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mahalaxmi Novelties - Home</title>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wine: {
+              950: '#1D050D',
+              900: '#2A0A14',
+              800: '#431220',
+              700: '#6B1E2E',
+              600: '#8A263B',
+            },
+            gold: {
+              light: '#F0D9A0',
+              DEFAULT: '#D4AF6A',
+              dark: '#9E7836',
+              deep: '#785623'
+            },
+            ivory: {
+              DEFAULT: '#FBF6EE',
+              surface: '#F4ECE0',
+              muted: '#E9DEC9'
+            },
+            charcoal: {
+              DEFAULT: '#26211E',
+              muted: '#625852',
+              light: '#8E827B'
+            }
+          },
+          fontFamily: {
+            serif: ['"Cormorant Garamond"', 'serif'],
+            sans: ['"Inter"', 'sans-serif']
+          },
+          boxShadow: {
+            'floating-gold': '0 18px 36px -10px rgba(212, 175, 106, 0.28), 0 8px 18px -6px rgba(42, 10, 20, 0.45)',
+            'floating-card': '0 20px 40px -12px rgba(42, 10, 20, 0.12), 0 8px 16px -6px rgba(42, 10, 20, 0.08)',
+            'deep-3d': '0 26px 50px -12px rgba(23, 4, 9, 0.5), 0 12px 24px -8px rgba(0, 0, 0, 0.4)',
+            'glass-inset': 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.35)',
+            'glass-inset-dark': 'inset 0 1px 1px 0 rgba(240, 217, 160, 0.25)'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom CSS adjustments for 3D perspective and glassmorphism */
+    body {
+      background-color: #FBF6EE;
+      color: #26211E;
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      width: 390px;
+      margin: 0 auto;
+      position: relative;
+    }
+    
+    .bg-lotus-pattern {
+      background-image: radial-gradient(rgba(212, 175, 106, 0.12) 1px, transparent 1px),
+                        radial-gradient(rgba(240, 217, 160, 0.08) 1.5px, transparent 1.5px);
+      background-size: 24px 24px, 48px 48px;
+      background-position: 0 0, 12px 12px;
+    }
+
+    .hero-gradient {
+      background: linear-gradient(165deg, #1D050D 0%, #2A0A14 38%, #541624 72%, #6B1E2E 100%);
+    }
+
+    .perspective-container {
+      perspective: 900px;
+    }
+
+    .tilt-card-left {
+      transform: rotateY(14deg) rotateZ(-1.5deg) scale(0.92);
+      transform-style: preserve-3d;
+      transition: transform 0.3s ease;
+    }
+
+    .tilt-card-center {
+      transform: rotateY(0deg) scale(1.05) translateZ(24px);
+      transform-style: preserve-3d;
+      box-shadow: 0 24px 45px -8px rgba(35, 7, 16, 0.45), 0 0 0 1px rgba(212, 175, 106, 0.45);
+    }
+
+    .tilt-card-right {
+      transform: rotateY(-14deg) rotateZ(1.5deg) scale(0.92);
+      transform-style: preserve-3d;
+      transition: transform 0.3s ease;
+    }
+
+    /* Hide scrollbars but allow scrolling */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .gold-glow {
+      filter: drop-shadow(0 0 25px rgba(212, 175, 106, 0.45));
+    }
+
+    .gold-text-glow {
+      text-shadow: 0 2px 10px rgba(212, 175, 106, 0.3);
+    }
+  </style>
+</head>
+<body class="relative min-h-screen bg-[#FBF6EE] pb-28">
+
+  <!-- ==================== 1. SLIM TOP BAR ==================== -->
+  <header class="absolute top-0 left-0 right-0 z-40 px-5 pt-3 pb-2 flex items-center justify-between">
+    <!-- Brand Logo -->
+    <div class="flex items-center space-x-2">
+      <div class="w-9 h-9 rounded-full bg-wine-950/60 backdrop-blur-md border border-gold/40 p-1 flex items-center justify-center shadow-lg">
+        <img src="https://lh3.googleusercontent.com/aida/ALJJyrCIxE9_beci70u26JT_0pGbiX-umTgVSEFOHMp3vgEABfj4Ekj0wfEB-RBgVCIis4XhSKVBjIJGmquDfk1TWJndK1fuSoV7Te0xt26JvUHQff_s5FMjaoKP9NB9JDycm7cF6_SkZPFv-A6zJhnO6FZ1D2-gwzVl523dy4X3oEohZiBqSQClwRjVoRKE01u93VYlv3KA67ThdQf-Hy8NdV5Ib0bDEC-41LCuKPszyvCHdA" alt="Mahalaxmi Novelties MN Logo" class="w-full h-full object-contain filter drop-shadow(0 1px 3px rgba(212, 175, 106, 0.5))">
+      </div>
+      <span class="font-serif text-gold-light text-base tracking-wider font-semibold opacity-95">MN</span>
+    </div>
+
+    <!-- Right Controls: Language & Cart -->
+    <div class="flex items-center space-x-3">
+      <!-- Language Toggle EN | ಕನ್ನಡ -->
+      <div class="flex items-center bg-black/40 backdrop-blur-md border border-gold/30 rounded-full px-3 py-1 shadow-glass-inset-dark">
+        <span class="text-xs font-semibold text-gold-light tracking-wide">EN</span>
+        <span class="text-xs text-gold/40 mx-1.5 font-light">|</span>
+        <span class="text-xs font-medium text-gold/80 hover:text-gold-light transition-colors">ಕನ್ನಡ</span>
+      </div>
+
+      <!-- Cart Button -->
+      <button class="relative w-9 h-9 rounded-full bg-black/40 backdrop-blur-md border border-gold/30 flex items-center justify-center shadow-lg active:scale-95 transition-transform" aria-label="Cart">
+        <svg class="w-4 h-4 text-gold-light" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25c-.67 0-1.189-.578-1.119-1.243l1.263-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+        </svg>
+        <!-- Badge -->
+        <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gold text-wine-950 font-sans font-bold text-[10px] flex items-center justify-center shadow-sm">3</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== 2. HERO SECTION ==================== -->
+  <section class="relative hero-gradient bg-lotus-pattern pt-16 pb-20 px-5 overflow-visible">
+    <!-- Atmospheric Ambient Glows behind jewelry -->
+    <div class="absolute top-24 left-1/2 -translate-x-1/2 w-64 h-64 bg-gold/25 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-44 left-1/3 w-40 h-40 bg-gold-light/20 rounded-full blur-2xl pointer-events-none"></div>
+
+    <!-- Subtle lotus decorative background crest watermark -->
+    <div class="absolute top-12 right-0 -mr-10 opacity-10 pointer-events-none w-48 h-48">
+      <img src="https://lh3.googleusercontent.com/aida/ALJJyrCIxE9_beci70u26JT_0pGbiX-umTgVSEFOHMp3vgEABfj4Ekj0wfEB-RBgVCIis4XhSKVBjIJGmquDfk1TWJndK1fuSoV7Te0xt26JvUHQff_s5FMjaoKP9NB9JDycm7cF6_SkZPFv-A6zJhnO6FZ1D2-gwzVl523dy4X3oEohZiBqSQClwRjVoRKE01u93VYlv3KA67ThdQf-Hy8NdV5Ib0bDEC-41LCuKPszyvCHdA" alt="" class="w-full h-full object-contain filter invert brightness-200">
+    </div>
+
+    <!-- Content Header -->
+    <div class="text-center relative z-10 pt-2 mb-2">
+      <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/5 backdrop-blur-md border border-gold/30 mb-2.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></span>
+        <span class="text-[11px] font-medium tracking-widest uppercase text-gold-light">Heritage Collection 2025</span>
+      </div>
+
+      <h1 class="font-serif text-[34px] leading-tight font-bold text-ivory tracking-wide gold-text-glow">
+        Mahalaxmi Novelties
+      </h1>
+      <p class="font-sans text-xs text-ivory/80 font-normal tracking-wide mt-1">
+        Wholesale &amp; Retail Imitation Jewellery &middot; Kalaburagi
+      </p>
+    </div>
+
+    <!-- Floating Jewellery Cut-out with 3D Overhang into next section -->
+    <div class="relative z-20 mt-3 -mb-16 flex flex-col items-center">
+      <!-- Glow pedestal / floating ring -->
+      <div class="relative w-72 h-72 flex items-center justify-center">
+        <!-- Circular soft halo plate -->
+        <div class="absolute inset-4 rounded-full bg-gradient-to-tr from-gold/30 via-wine-700/40 to-transparent backdrop-blur-sm border border-gold/40 shadow-deep-3d"></div>
+        
+        <!-- Large Floating Gold Necklace Cut-out with earrings -->
+        <div class="relative z-10 w-64 h-64 transition-transform transform hover:scale-105 duration-500">
+          <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAz6oY100z53pwT9WSsFP_Uxrx4ziv5KCHEYBEK2oeZoP7m67_7pl6ByQyl1Aj9DJyN2kzWUAWL8lvhSjnvPl7IUsAAKnvjh4cplnmpwkcjrG6wbFXxDkyLut9BVSjEUvzuTWvPuQzSui2HeRqE6vuyNa32WAUhuHZrOQ8w_yvrqmGGHmv_qS_rdHIPabMfYAc8PPyq0L-njaRzzfn99HtCHYa-ksRXravRMNC_ai6a" 
+               alt="Mahalaxmi Novelties Royal Kundan Pearl Choker Set" 
+               class="w-full h-full object-contain drop-shadow-[0_22px_24px_rgba(15,2,7,0.75)] filter brightness-105">
+        </div>
+
+        <!-- Floating 3D Badge Tag -->
+        <div class="absolute bottom-3 right-4 z-30 bg-wine-950/80 backdrop-blur-md border border-gold/50 rounded-2xl px-3 py-1.5 shadow-floating-gold flex items-center space-x-1.5">
+          <span class="text-gold-light text-xs font-serif font-semibold italic">Pure 1 Gram Finish</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons (Hero CTA) -->
+      <div class="relative z-30 flex items-center justify-center space-x-3 w-full mt-2 px-2">
+        <!-- Gold Filled: Explore Catalogue -->
+        <a href="#catalogue" class="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-gold via-gold-light to-gold text-wine-950 font-sans font-semibold text-xs tracking-wider uppercase text-center shadow-floating-gold active:scale-98 transition-transform border border-gold-light">
+          Explore Catalogue
+        </a>
+        <!-- Glass Outlined: Wholesale Buyer -->
+        <a href="#wholesale" class="flex-1 py-3 px-4 rounded-xl bg-white/10 backdrop-blur-md border border-gold/60 text-ivory font-sans font-medium text-xs tracking-wider uppercase text-center shadow-glass-inset-dark hover:bg-white/15 active:scale-98 transition-all">
+          Wholesale Buyer
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 3. SLIDING JEWELLERY STRIP ==================== -->
+  <section class="relative pt-20 pb-8 px-4 overflow-hidden">
+    <!-- Header of Strip -->
+    <div class="flex items-end justify-between mb-4 px-1">
+      <div>
+        <div class="flex items-center space-x-1.5 mb-1">
+          <span class="w-4 h-[1px] bg-gold"></span>
+          <span class="text-[10px] tracking-widest font-semibold uppercase text-gold-dark">Curated Showpieces</span>
+        </div>
+        <h2 class="font-serif text-2xl font-bold text-wine-900">Iconic Showcases</h2>
+      </div>
+      <!-- Sliding Indicator / Arrow showing slide right to left -->
+      <div class="flex items-center space-x-2 text-wine-800">
+        <span class="text-[11px] font-medium text-charcoal-muted">Swipe</span>
+        <div class="w-7 h-7 rounded-full bg-white shadow-floating-card border border-gold/30 flex items-center justify-center animate-pulse">
+          <svg class="w-3.5 h-3.5 text-gold-dark" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3D Perspective Card Slider Row -->
+    <div class="perspective-container relative flex items-center justify-center space-x-[-12px] py-4 overflow-visible">
+      <!-- Left Card (Slightly smaller, angled) -->
+      <div class="tilt-card-left w-[120px] h-[190px] rounded-2xl bg-gradient-to-b from-wine-900 to-wine-950 p-2.5 flex flex-col justify-between border border-gold/30 shadow-lg relative flex-shrink-0 opacity-85">
+        <div class="text-[9px] uppercase tracking-wider text-gold-light/80 font-medium">Patli Bangles</div>
+        <div class="relative w-full h-24 my-auto">
+          <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSGL_DOJW4rwPNeGeztYeUYKJih8YHs3fsDpePUVCL1Rtt7uzo8BFow98yLtzxvJlQXpWQNUxqJvXMG9pG35bXMqsa_qd2QEDGQC93_aG_62NpMzxvLcpsergP_Ajq1uLMpivjyo6_qsdtLnQnIXubLfCa_BNw263ta6w6b9ArPZ7ZKvK--0unfdszr0UrvUsh2iV7hFy7DP_HirJZMHvEtuontdhc_QHRUz8DFxsq" alt="Bangles" class="w-full h-full object-contain filter drop-shadow-[0_10px_12px_rgba(0,0,0,0.6)]">
+        </div>
+        <div class="text-[11px] font-serif font-bold text-ivory text-center">Filigree Kadas</div>
+      </div>
+
+      <!-- Center Card (Elevated, Sharper, Bigger, Focal 3D point) -->
+      <div class="tilt-card-center z-20 w-[145px] h-[215px] rounded-2xl bg-gradient-to-b from-wine-800 via-wine-900 to-wine-950 p-3 flex flex-col justify-between border border-gold shadow-floating-gold relative flex-shrink-0">
+        <!-- Floating Glass Pill -->
+        <div class="flex items-center justify-between">
+          <span class="px-2 py-0.5 rounded-full bg-gold/20 border border-gold/40 text-[9px] font-semibold text-gold-light tracking-wider">FEATURED</span>
+          <span class="text-gold-light text-xs font-serif font-bold">MN-01</span>
+        </div>
+        
+        <!-- Popping Out Jewellery -->
+        <div class="relative w-full h-28 my-auto transform scale-110 -translate-y-1">
+          <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgxOLJFl5ZwJMf7JuNPiUj9IKkUhinl8fNlM3l5dnuVb8oGr8vhTO_ypDMfTDsX1caf3bHuiFIq2VoH-etWDv3rkr944UqlKLY8954iXAxq53MNJYl1nsn6ucoVyz_IORQKBLQWWm7hjPtSfimxs8K-WIoBe9ta3Xy47BRwFtKamAFdXPDJkIuX6HTRd1l2gqXBv7DFlmfOuVJnEvNoS3IhZWE2-x1B8fng58b0Kos" alt="Gold Jhumkas" class="w-full h-full object-contain filter drop-shadow-[0_14px_16px_rgba(0,0,0,0.7)]">
+        </div>
+
+        <div class="text-center pt-1 border-t border-gold/20">
+          <div class="text-[13px] font-serif font-bold text-ivory tracking-wide">Ruby Jhumka Pair</div>
+          <div class="text-[10px] text-gold-light font-medium">Wholesale ₹340 / pair</div>
+        </div>
+      </div>
+
+      <!-- Right Card (Angled, cut off edge) -->
+      <div class="tilt-card-right w-[120px] h-[190px] rounded-2xl bg-gradient-to-b from-wine-900 to-wine-950 p-2.5 flex flex-col justify-between border border-gold/30 shadow-lg relative flex-shrink-0 opacity-85">
+        <div class="text-[9px] uppercase tracking-wider text-gold-light/80 font-medium">Agra Payal</div>
+        <div class="relative w-full h-24 my-auto">
+          <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjPc56WVX2U49oSiKyYevAk1BOKUzuajgWb5ZSSnDCHU9CqhcuoG-N3uCc4Lyh-VznyqF2PLaQmiDgiJcpwICwJvGt6v-7NzcyIzGOnaaBRA_yyxXeWiQv2K-ZaLJLhzwW6EqUp_xl7zFtZboF-NPqMb0Lcpz9i07YtrRKlgZsrRSdu0EIQFc5ddt1_7YhZ2qq6uigABr1uzMjFzW11y_8MjzKYaal0IyJwh2PNlwQ" alt="Silver Agra Payal" class="w-full h-full object-contain filter drop-shadow-[0_10px_12px_rgba(0,0,0,0.6)]">
+        </div>
+        <div class="text-[11px] font-serif font-bold text-ivory text-center">Ghungroo Anklets</div>
+      </div>
+    </div>
+
+    <!-- Thin Gold Progress Line -->
+    <div class="w-full max-w-[200px] mx-auto mt-2 h-[2px] bg-wine-900/10 rounded-full overflow-hidden">
+      <div class="w-1/3 h-full bg-gradient-to-r from-gold-dark via-gold to-gold-light rounded-full ml-12"></div>
+    </div>
+  </section>
+
+  <!-- ==================== 4. SHOP BY CATEGORY ==================== -->
+  <section class="py-5 px-4">
+    <div class="flex items-center justify-between mb-4 px-1">
+      <div>
+        <div class="flex items-center space-x-1.5 mb-1">
+          <span class="w-4 h-[1px] bg-gold"></span>
+          <span class="text-[10px] tracking-widest font-semibold uppercase text-gold-dark">Browse Collections</span>
+        </div>
+        <h2 class="font-serif text-2xl font-bold text-wine-900">Shop by Category</h2>
+      </div>
+      <a href="#all-categories" class="text-xs font-semibold text-wine-700 hover:text-wine-900 flex items-center">
+        View All <span class="ml-1 text-gold-dark">&rsaquo;</span>
+      </a>
+    </div>
+
+    <!-- 6 Floating Circular Category Tiles in Horizontal Scroll -->
+    <div class="flex space-x-4 overflow-x-auto no-scrollbar py-3 px-1">
+      <!-- 1. Matte & C.Z. -->
+      <div class="flex flex-col items-center flex-shrink-0 group cursor-pointer w-20">
+        <div class="relative w-16 h-16 rounded-full bg-gradient-to-b from-white to-ivory-surface p-1 shadow-floating-card border-2 border-gold/50 group-hover:border-gold transition-all">
+          <div class="w-full h-full rounded-full bg-wine-950/5 flex items-center justify-center overflow-visible relative">
+            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgxOLJFl5ZwJMf7JuNPiUj9IKkUhinl8fNlM3l5dnuVb8oGr8vhTO_ypDMfTDsX1caf3bHuiFIq2VoH-etWDv3rkr944UqlKLY8954iXAxq53MNJYl1nsn6ucoVyz_IORQKBLQWWm7hjPtSfimxs8K-WIoBe9ta3Xy47BRwFtKamAFdXPDJkIuX6HTRd1l2gqXBv7DFlmfOuVJnEvNoS3IhZWE2-x1B8fng58b0Kos" alt="Matte & C.Z." class="w-14 h-14 object-contain filter drop-shadow-md transform -translate-y-2 group-hover:scale-110 transition-transform">
+          </div>
+        </div>
+        <span class="mt-2 text-[11px] font-medium text-charcoal text-center leading-tight">Matte &amp; C.Z.</span>
+      </div>
+
+      <!-- 2. Patli Bangles -->
+      <div class="flex flex-col items-center flex-shrink-0 group cursor-pointer w-20">
+        <div class="relative w-16 h-16 rounded-full bg-gradient-to-b from-white to-ivory-surface p-1 shadow-floating-card border-2 border-gold/50 group-hover:border-gold transition-all">
+          <div class="w-full h-full rounded-full bg-wine-950/5 flex items-center justify-center overflow-visible relative">
+            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSGL_DOJW4rwPNeGeztYeUYKJih8YHs3fsDpePUVCL1Rtt7uzo8BFow98yLtzxvJlQXpWQNUxqJvXMG9pG35bXMqsa_qd2QEDGQC93_aG_62NpMzxvLcpsergP_Ajq1uLMpivjyo6_qsdtLnQnIXubLfCa_BNw263ta6w6b9ArPZ7ZKvK--0unfdszr0UrvUsh2iV7hFy7DP_HirJZMHvEtuontdhc_QHRUz8DFxsq" alt="Patli Bangles" class="w-14 h-14 object-contain filter drop-shadow-md transform -translate-y-2 group-hover:scale-110 transition-transform">
+          </div>
+        </div>
+        <span class="mt-2 text-[11px] font-medium text-charcoal text-center leading-tight">Patli Bangles</span>
+      </div>
+
+      <!-- 3. Necklaces -->
+      <div class="flex flex-col items-center flex-shrink-0 group cursor-pointer w-20">
+        <div class="relative w-16 h-16 rounded-full bg-gradient-to-b from-white to-ivory-surface p-1 shadow-floating-card border-2 border-gold/50 group-hover:border-gold transition-all">
+          <div class="w-full h-full rounded-full bg-wine-950/5 flex items-center justify-center overflow-visible relative">
+            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAz6oY100z53pwT9WSsFP_Uxrx4ziv5KCHEYBEK2oeZoP7m67_7pl6ByQyl1Aj9DJyN2kzWUAWL8lvhSjnvPl7IUsAAKnvjh4cplnmpwkcjrG6wbFXxDkyLut9BVSjEUvzuTWvPuQzSui2HeRqE6vuyNa32WAUhuHZrOQ8w_yvrqmGGHmv_qS_rdHIPabMfYAc8PPyq0L-njaRzzfn99HtCHYa-ksRXravRMNC_ai6a" alt="Necklaces" class="w-14 h-14 object-contain filter drop-shadow-md transform -translate-y-2 group-hover:scale-110 transition-transform">
+          </div>
+        </div>
+        <span class="mt-2 text-[11px] font-medium text-charcoal text-center leading-tight">Necklaces</span>
+      </div>
+
+      <!-- 4. Roldgold Chains -->
+      <div class="flex flex-col items-center flex-shrink-0 group cursor-pointer w-20">
+        <div class="relative w-16 h-16 rounded-full bg-gradient-to-b from-white to-ivory-surface p-1 shadow-floating-card border-2 border-gold/50 group-hover:border-gold transition-all">
+          <div class="w-full h-full rounded-full bg-wine-950/5 flex items-center justify-center overflow-visible relative">
+            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAz6oY100z53pwT9WSsFP_Uxrx4ziv5KCHEYBEK2oeZoP7m67_7pl6ByQyl1Aj9DJyN2kzWUAWL8lvhSjnvPl7IUsAAKnvjh4cplnmpwkcjrG6wbFXxDkyLut9BVSjEUvzuTWvPuQzSui2HeRqE6vuyNa32WAUhuHZrOQ8w_yvrqmGGHmv_qS_rdHIPabMfYAc8PPyq0L-njaRzzfn99HtCHYa-ksRXravRMNC_ai6a" alt="Roldgold Chains" class="w-14 h-14 object-contain filter drop-shadow-md transform -translate-y-2 group-hover:scale-110 transition-transform">
+          </div>
+        </div>
+        <span class="mt-2 text-[11px] font-medium text-charcoal text-center leading-tight">Roldgold Chains</span>
+      </div>
+
+      <!-- 5. Agra Payal -->
+      <div class="flex flex-col items-center flex-shrink-0 group cursor-pointer w-20">
+        <div class="relative w-16 h-16 rounded-full bg-gradient-to-b from-white to-ivory-surface p-1 shadow-floating-card border-2 border-gold/50 group-hover:border-gold transition-all">
+          <div class="w-full h-full rounded-full bg-wine-950/5 flex items-center justify-center overflow-visible relative">
+            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjPc56WVX2U49oSiKyYevAk1BOKUzuajgWb5ZSSnDCHU9CqhcuoG-N3uCc4Lyh-VznyqF2PLaQmiDgiJcpwICwJvGt6v-7NzcyIzGOnaaBRA_yyxXeWiQv2K-ZaLJLhzwW6EqUp_xl7zFtZboF-NPqMb0Lcpz9i07YtrRKlgZsrRSdu0EIQFc5ddt1_7YhZ2qq6uigABr1uzMjFzW11y_8MjzKYaal0IyJwh2PNlwQ" alt="Agra Payal" class="w-14 h-14 object-contain filter drop-shadow-md transform -translate-y-2 group-hover:scale-110 transition-transform">
+          </div>
+        </div>
+        <span class="mt-2 text-[11px] font-medium text-charcoal text-center leading-tight">Agra Payal</span>
+      </div>
+
+      <!-- 6. Rings & Lockets -->
+      <div class="flex flex-col items-center flex-shrink-0 group cursor-pointer w-20">
+        <div class="relative w-16 h-16 rounded-full bg-gradient-to-b from-white to-ivory-surface p-1 shadow-floating-card border-2 border-gold/50 group-hover:border-gold transition-all">
+          <div class="w-full h-full rounded-full bg-wine-950/5 flex items-center justify-center overflow-visible relative">
+            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgxOLJFl5ZwJMf7JuNPiUj9IKkUhinl8fNlM3l5dnuVb8oGr8vhTO_ypDMfTDsX1caf3bHuiFIq2VoH-etWDv3rkr944UqlKLY8954iXAxq53MNJYl1nsn6ucoVyz_IORQKBLQWWm7hjPtSfimxs8K-WIoBe9ta3Xy47BRwFtKamAFdXPDJkIuX6HTRd1l2gqXBv7DFlmfOuVJnEvNoS3IhZWE2-x1B8fng58b0Kos" alt="Rings & Lockets" class="w-14 h-14 object-contain filter drop-shadow-md transform -translate-y-2 group-hover:scale-110 transition-transform">
+          </div>
+        </div>
+        <span class="mt-2 text-[11px] font-medium text-charcoal text-center leading-tight">Rings &amp; Lockets</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 5. NEW ARRIVALS (2-COLUMN PRODUCT CARDS) ==================== -->
+  <section class="py-5 px-4">
+    <div class="flex items-center justify-between mb-4 px-1">
+      <div>
+        <div class="flex items-center space-x-1.5 mb-1">
+          <span class="w-4 h-[1px] bg-gold"></span>
+          <span class="text-[10px] tracking-widest font-semibold uppercase text-gold-dark">Fresh in Store</span>
+        </div>
+        <h2 class="font-serif text-2xl font-bold text-wine-900">New Arrivals</h2>
+      </div>
+      <span class="text-xs text-charcoal-muted font-medium">Kalaburagi Direct</span>
+    </div>
+
+    <!-- 2-Column Grid of Floating 3D Cards -->
+    <div class="grid grid-cols-2 gap-3.5">
+      <!-- Product Card 1 -->
+      <div class="relative rounded-2xl bg-white p-3 shadow-floating-card border border-wine-900/5 hover:border-gold/40 transition-all flex flex-col justify-between">
+        <!-- Floating Cut-out Container -->
+        <div class="relative w-full h-32 rounded-xl bg-gradient-to-b from-ivory-surface/60 to-ivory/30 flex items-center justify-center p-2 mb-2">
+          <!-- Subtle gold ring in background -->
+          <div class="absolute inset-3 rounded-xl border border-gold/20"></div>
+          <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAz6oY100z53pwT9WSsFP_Uxrx4ziv5KCHEYBEK2oeZoP7m67_7pl6ByQyl1Aj9DJyN2kzWUAWL8lvhSjnvPl7IUsAAKnvjh4cplnmpwkcjrG6wbFXxDkyLut9BVSjEUvzuTWvPuQzSui2HeRqE6vuyNa32WAUhuHZrOQ8w_yvrqmGGHmv_qS_rdHIPabMfYAc8PPyq0L-njaRzzfn99HtCHYa-ksRXravRMNC_ai6a" alt="Rajwadi Choker Set" class="w-28 h-28 object-contain filter drop-shadow-[0_8px_12px_rgba(42,10,20,0.25)] transform -translate-y-2 hover:scale-105 transition-transform">
+          <!-- Tag Min. 12 sets -->
+          <span class="absolute top-2 left-2 px-2 py-0.5 rounded bg-wine-900 text-gold-light text-[9px] font-semibold tracking-wider shadow-sm">
+            Min. 12 sets
+          </span>
+        </div>
+
+        <div>
+          <span class="text-[10px] text-charcoal-light uppercase font-mono tracking-wider">SKU: MN-NK-402</span>
+          <h3 class="font-serif text-sm font-bold text-charcoal leading-snug line-clamp-1 mt-0.5">Rajwadi Choker &amp; Jhumka</h3>
+          
+          <div class="mt-2 pt-2 border-t border-ivory-muted/60 space-y-0.5">
+            <div class="flex items-baseline justify-between">
+              <span class="text-[11px] text-charcoal-muted">Retail</span>
+              <span class="text-xs font-semibold text-charcoal line-through opacity-70">₹1,850</span>
+            </div>
+            <div class="flex items-baseline justify-between">
+              <span class="text-[11px] font-bold text-wine-700">Wholesale</span>
+              <span class="text-sm font-bold text-wine-900">₹790</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="mt-2.5 w-full py-1.5 rounded-lg bg-wine-900/5 hover:bg-wine-900 hover:text-gold-light text-wine-900 text-[11px] font-semibold transition-colors border border-wine-900/10">
+          Enquire Lot
+        </button>
+      </div>
+
+      <!-- Product Card 2 -->
+      <div class="relative rounded-2xl bg-white p-3 shadow-floating-card border border-wine-900/5 hover:border-gold/40 transition-all flex flex-col justify-between">
+        <!-- Floating Cut-out Container -->
+        <div class="relative w-full h-32 rounded-xl bg-gradient-to-b from-ivory-surface/60 to-ivory/30 flex items-center justify-center p-2 mb-2">
+          <div class="absolute inset-3 rounded-xl border border-gold/20"></div>
+          <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSGL_DOJW4rwPNeGeztYeUYKJih8YHs3fsDpePUVCL1Rtt7uzo8BFow98yLtzxvJlQXpWQNUxqJvXMG9pG35bXMqsa_qd2QEDGQC93_aG_62NpMzxvLcpsergP_Ajq1uLMpivjyo6_qsdtLnQnIXubLfCa_BNw263ta6w6b9ArPZ7ZKvK--0unfdszr0UrvUsh2iV7hFy7DP_HirJZMHvEtuontdhc_QHRUz8DFxsq" alt="Patli Bangles Set" class="w-28 h-28 object-contain filter drop-shadow-[0_8px_12px_rgba(42,10,20,0.25)] transform -translate-y-2 hover:scale-105 transition-transform">
+          <span class="absolute top-2 left-2 px-2 py-0.5 rounded bg-wine-900 text-gold-light text-[9px] font-semibold tracking-wider shadow-sm">
+            Min. 12 sets
+          </span>
+        </div>
+
+        <div>
+          <span class="text-[10px] text-charcoal-light uppercase font-mono tracking-wider">SKU: MN-BG-108</span>
+          <h3 class="font-serif text-sm font-bold text-charcoal leading-snug line-clamp-1 mt-0.5">Filigree Patli Bangles (4pc)</h3>
+          
+          <div class="mt-2 pt-2 border-t border-ivory-muted/60 space-y-0.5">
+            <div class="flex items-baseline justify-between">
+              <span class="text-[11px] text-charcoal-muted">Retail</span>
+              <span class="text-xs font-semibold text-charcoal line-through opacity-70">₹1,200</span>
+            </div>
+            <div class="flex items-baseline justify-between">
+              <span class="text-[11px] font-bold text-wine-700">Wholesale</span>
+              <span class="text-sm font-bold text-wine-900">₹450</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="mt-2.5 w-full py-1.5 rounded-lg bg-wine-900/5 hover:bg-wine-900 hover:text-gold-light text-wine-900 text-[11px] font-semibold transition-colors border border-wine-900/10">
+          Enquire Lot
+        </button>
+      </div>
+
+      <!-- Product Card 3 -->
+      <div class="relative rounded-2xl bg-white p-3 shadow-floating-card border border-wine-900/5 hover:border-gold/40 transition-all flex flex-col justify-between">
+        <!-- Floating Cut-out Container -->
+        <div class="relative w-full h-32 rounded-xl bg-gradient-to-b from-ivory-surface/60 to-ivory/30 flex items-center justify-center p-2 mb-2">
+          <div class="absolute inset-3 rounded-xl border border-gold/20"></div>
+          <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjPc56WVX2U49oSiKyYevAk1BOKUzuajgWb5ZSSnDCHU9CqhcuoG-N3uCc4Lyh-VznyqF2PLaQmiDgiJcpwICwJvGt6v-7NzcyIzGOnaaBRA_yyxXeWiQv2K-ZaLJLhzwW6EqUp_xl7zFtZboF-NPqMb0Lcpz9i07YtrRKlgZsrRSdu0EIQFc5ddt1_7YhZ2qq6uigABr1uzMjFzW11y_8MjzKYaal0IyJwh2PNlwQ" alt="Agra Ghungroo Payal" class="w-28 h-28 object-contain filter drop-shadow-[0_8px_12px_rgba(42,10,20,0.25)] transform -translate-y-2 hover:scale-105 transition-transform">
+          <span class="absolute top-2 left-2 px-2 py-0.5 rounded bg-wine-900 text-gold-light text-[9px] font-semibold tracking-wider shadow-sm">
+            Min. 12 sets
+          </span>
+        </div>
+
+        <div>
+          <span class="text-[10px] text-charcoal-light uppercase font-mono tracking-wider">SKU: MN-PL-881</span>
+          <h3 class="font-serif text-sm font-bold text-charcoal leading-snug line-clamp-1 mt-0.5">Agra Ghungroo Payal Pair</h3>
+          
+          <div class="mt-2 pt-2 border-t border-ivory-muted/60 space-y-0.5">
+            <div class="flex items-baseline justify-between">
+              <span class="text-[11px] text-charcoal-muted">Retail</span>
+              <span class="text-xs font-semibold text-charcoal line-through opacity-70">₹950</span>
+            </div>
+            <div class="flex items-baseline justify-between">
+              <span class="text-[11px] font-bold text-wine-700">Wholesale</span>
+              <span class="text-sm font-bold text-wine-900">₹320</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="mt-2.5 w-full py-1.5 rounded-lg bg-wine-900/5 hover:bg-wine-900 hover:text-gold-light text-wine-900 text-[11px] font-semibold transition-colors border border-wine-900/10">
+          Enquire Lot
+        </button>
+      </div>
+
+      <!-- Product Card 4 -->
+      <div class="relative rounded-2xl bg-white p-3 shadow-floating-card border border-wine-900/5 hover:border-gold/40 transition-all flex flex-col justify-between">
+        <!-- Floating Cut-out Container -->
+        <div class="relative w-full h-32 rounded-xl bg-gradient-to-b from-ivory-surface/60 to-ivory/30 flex items-center justify-center p-2 mb-2">
+          <div class="absolute inset-3 rounded-xl border border-gold/20"></div>
+          <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgxOLJFl5ZwJMf7JuNPiUj9IKkUhinl8fNlM3l5dnuVb8oGr8vhTO_ypDMfTDsX1caf3bHuiFIq2VoH-etWDv3rkr944UqlKLY8954iXAxq53MNJYl1nsn6ucoVyz_IORQKBLQWWm7hjPtSfimxs8K-WIoBe9ta3Xy47BRwFtKamAFdXPDJkIuX6HTRd1l2gqXBv7DFlmfOuVJnEvNoS3IhZWE2-x1B8fng58b0Kos" alt="Kemp Ruby Jhumkas" class="w-28 h-28 object-contain filter drop-shadow-[0_8px_12px_rgba(42,10,20,0.25)] transform -translate-y-2 hover:scale-105 transition-transform">
+          <span class="absolute top-2 left-2 px-2 py-0.5 rounded bg-wine-900 text-gold-light text-[9px] font-semibold tracking-wider shadow-sm">
+            Min. 12 sets
+          </span>
+        </div>
+
+        <div>
+          <span class="text-[10px] text-charcoal-light uppercase font-mono tracking-wider">SKU: MN-ER-519</span>
+          <h3 class="font-serif text-sm font-bold text-charcoal leading-snug line-clamp-1 mt-0.5">Kemp Ruby Dome Jhumkas</h3>
+          
+          <div class="mt-2 pt-2 border-t border-ivory-muted/60 space-y-0.5">
+            <div class="flex items-baseline justify-between">
+              <span class="text-[11px] text-charcoal-muted">Retail</span>
+              <span class="text-xs font-semibold text-charcoal line-through opacity-70">₹820</span>
+            </div>
+            <div class="flex items-baseline justify-between">
+              <span class="text-[11px] font-bold text-wine-700">Wholesale</span>
+              <span class="text-sm font-bold text-wine-900">₹280</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="mt-2.5 w-full py-1.5 rounded-lg bg-wine-900/5 hover:bg-wine-900 hover:text-gold-light text-wine-900 text-[11px] font-semibold transition-colors border border-wine-900/10">
+          Enquire Lot
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 6. SMALL FLOATING GLASS WHATSAPP BUTTON ==================== -->
+  <!-- Note: Strictly adhering to NO GREEN ANYWHERE constraint; rendered in luxury glass with gold/wine tones -->
+  <a href="https://wa.me/919999999999" target="_blank" rel="noopener noreferrer" 
+     class="fixed bottom-24 right-4 z-50 w-12 h-12 rounded-full bg-white/70 backdrop-blur-xl border border-gold/70 shadow-floating-gold flex items-center justify-center active:scale-95 transition-transform group" 
+     aria-label="Direct Wholesale WhatsApp Chat">
+    <div class="relative flex items-center justify-center">
+      <!-- WhatsApp Monogram / Speech bubble SVG styled in luxury gold/wine (zero green) -->
+      <svg class="w-6 h-6 text-wine-900 group-hover:text-gold transition-colors" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.81 13.47 3.81 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.11 7.44C8.95 7.44 8.68 7.5 8.46 7.74C8.24 7.98 7.62 8.56 7.62 9.73C7.62 10.9 8.47 12.03 8.59 12.19C8.71 12.35 10.23 14.77 12.63 15.71C14.62 16.5 15.03 16.34 15.47 16.3C15.91 16.26 16.89 15.72 17.09 15.15C17.29 14.58 17.29 14.1 17.23 14C17.17 13.9 17.01 13.84 16.77 13.72C16.53 13.6 15.35 13.02 15.13 12.94C14.91 12.86 14.75 12.82 14.59 13.06C14.43 13.3 13.97 13.84 13.83 14C13.69 14.16 13.55 14.18 13.31 14.06C13.07 13.94 12.3 13.69 11.39 12.88C10.68 12.25 10.2 11.47 10.06 11.23C9.92 10.99 10.05 10.86 10.17 10.74C10.28 10.63 10.42 10.45 10.54 10.31C10.66 10.17 10.7 10.07 10.78 9.91C10.86 9.75 10.82 9.61 10.76 9.49C10.7 9.37 10.24 8.24 10.04 7.78C9.85 7.33 9.66 7.39 9.52 7.38C9.39 7.38 9.24 7.44 9.11 7.44Z"/>
+      </svg>
+      <!-- Pulse dot -->
+      <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-gold border border-white"></span>
+    </div>
+  </a>
+
+  <!-- ==================== 7. FLOATING BOTTOM NAVIGATION ==================== -->
+  <!-- Rounded glass bar that floats above the bottom edge (not attached to bottom) -->
+  <nav class="fixed bottom-4 left-4 right-4 z-50 max-w-[358px] mx-auto">
+    <div class="h-16 px-3 bg-wine-950/80 backdrop-blur-xl border border-gold/40 rounded-full shadow-deep-3d flex items-center justify-between">
+      <!-- 1. Home (Active with gold glow) -->
+      <a href="#home" class="relative flex flex-col items-center justify-center flex-1 py-1 text-gold-light group">
+        <!-- Active Gold Glow Aura -->
+        <div class="absolute -inset-1 rounded-full bg-gold/25 blur-md"></div>
+        <div class="relative z-10 w-9 h-9 rounded-full bg-gradient-to-b from-gold/30 to-gold/10 border border-gold flex items-center justify-center shadow-floating-gold">
+          <svg class="w-4 h-4 text-gold-light" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+          </svg>
+        </div>
+        <span class="relative z-10 text-[9px] font-semibold text-gold-light tracking-wider mt-0.5">Home</span>
+      </a>
+
+      <!-- 2. Categories -->
+      <a href="#categories" class="flex flex-col items-center justify-center flex-1 py-1 text-ivory/60 hover:text-gold-light transition-colors group">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+        </svg>
+        <span class="text-[9px] font-medium tracking-wider">Categories</span>
+      </a>
+
+      <!-- 3. Search -->
+      <a href="#search" class="flex flex-col items-center justify-center flex-1 py-1 text-ivory/60 hover:text-gold-light transition-colors group">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+        </svg>
+        <span class="text-[9px] font-medium tracking-wider">Search</span>
+      </a>
+
+      <!-- 4. Cart -->
+      <a href="#cart" class="relative flex flex-col items-center justify-center flex-1 py-1 text-ivory/60 hover:text-gold-light transition-colors group">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25c-.67 0-1.189-.578-1.119-1.243l1.263-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
+        </svg>
+        <span class="text-[9px] font-medium tracking-wider">Cart</span>
+        <span class="absolute top-0 right-3 w-1.5 h-1.5 rounded-full bg-gold"></span>
+      </a>
+
+      <!-- 5. Account -->
+      <a href="#account" class="flex flex-col items-center justify-center flex-1 py-1 text-ivory/60 hover:text-gold-light transition-colors group">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+        </svg>
+        <span class="text-[9px] font-medium tracking-wider">Account</span>
+      </a>
+    </div>
+  </nav>
+
+</body>
+</html>

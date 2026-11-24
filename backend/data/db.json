@@ -1,0 +1,1066 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "full_name": "Manoharsingh P. Rathore (Admin)",
+      "email": "admin@mahalaxminovelties.com",
+      "phone": "9481242188",
+      "password_hash": "$2a$10$yeXwzMiGY3S2Ogk3q.iZYuSzgNZck6BapXVmcwySvUYieF.8Q/vC.",
+      "role": "admin",
+      "account_type": "wholesale",
+      "is_active": true,
+      "created_at": "2026-11-23T16:51:34.902Z"
+    },
+    {
+      "id": 2,
+      "full_name": "Test Customer",
+      "email": "customer@test.com",
+      "phone": "9880011223",
+      "password_hash": "$2a$10$6GP231MLfVqRslI9vMGgsejPRnvU3ogx6OhdRSnflgStgzQ7f.QPC",
+      "role": "customer",
+      "account_type": "retail",
+      "is_active": true,
+      "created_at": "2026-11-24T12:29:05.530Z"
+    },
+    {
+      "id": 3,
+      "full_name": "Test Customer",
+      "email": "customer_test_sec@example.com",
+      "phone": "9876543211",
+      "password_hash": "$2a$10$kFRRKoUzg7FNvcuBlwNBeeWLZYM1DmFTrS/W5nSV1t0PxVOHTI2S6",
+      "role": "customer",
+      "account_type": "retail",
+      "is_active": true,
+      "created_at": "2026-11-24T12:35:21.867Z"
+    }
+  ],
+  "customer_profiles": [],
+  "addresses": [],
+  "categories": [
+    {
+      "id": 1,
+      "name_en": "Matte & C.Z. Jewellery",
+      "name_kn": "ಮ್ಯಾಟ್ & ಸಿ.ಝಡ್. ಜ್ಯುವೆಲ್ಲರಿ",
+      "slug": "matte-cz-jewellery",
+      "description_en": "Premium matte finish and sparkling cubic zirconia bridal sets, choker sets, and temple jewellery.",
+      "description_kn": "ಪ್ರೀಮಿಯಂ ಮ್ಯಾಟ್ ಫಿನಿಶ್ ಮತ್ತು ಆಕರ್ಷಕ ಸಿ.ಝಡ್. ಬ್ರೈಡಲ್ ಸೆಟ್‌ಗಳು, ಚೋಕರ್‌ಗಳು ಮತ್ತು ದೇವಸ್ಥಾನ ಶೈಲಿಯ ಆಭರಣಗಳು.",
+      "display_order": 1,
+      "is_active": true
+    },
+    {
+      "id": 2,
+      "name_en": "Patli Bangles",
+      "name_kn": "ಪಟ್ಲಿ ಬಳೆಗಳು",
+      "slug": "patli-bangles",
+      "description_en": "Traditional and contemporary micro-plated patli bangles, kadas, and daily-wear bangles.",
+      "description_kn": "ಸಾಂಪ್ರದಾಯಿಕ ಮತ್ತು ಆಧುನಿಕ ಮೈಕ್ರೋ-ಪ್ಲೇಟೆಡ್ ಪಟ್ಲಿ ಬಳೆಗಳು, ಕಡಾಗಳು ಹಾಗೂ ನಿತ್ಯೋಪಯೋಗಿ ಬಳೆಗಳು.",
+      "display_order": 2,
+      "is_active": true
+    },
+    {
+      "id": 3,
+      "name_en": "Necklaces",
+      "name_kn": "ಹಾರಗಳು / ನೆಕ್ಲೇಸ್",
+      "slug": "necklaces",
+      "description_en": "Exquisite long harams, short necklaces, and ethnic designer necklace sets.",
+      "description_kn": "ಭವ್ಯವಾದ ಉದ್ದನೆಯ ಹಾರಗಳು, ಸಣ್ಣ ನೆಕ್ಲೇಸ್‌ಗಳು ಹಾಗೂ ಸಾಂಪ್ರದಾಯಿಕ ಡಿಸೈನರ್ ಹಾರಗಳು.",
+      "display_order": 3,
+      "is_active": true
+    },
+    {
+      "id": 4,
+      "name_en": "Roldgold & Guarantee Chains",
+      "name_kn": "ರೋಲ್ಡ್‌ಗೋಲ್ಡ್ & ಗ್ಯಾರಂಟಿ ಚೈನ್‌ಗಳು",
+      "slug": "roldgold-guarantee-chains",
+      "description_en": "1-year guarantee roldgold chains, thali chains, dokiya, and daily wear rope chains.",
+      "description_kn": "1-ವರ್ಷದ ಗ್ಯಾರಂಟಿ ರೋಲ್ಡ್‌ಗೋಲ್ಡ್ ಚೈನ್‌ಗಳು, ತಾಳಿ ಚೈನ್‌ಗಳು, ಡೋಕಿಯಾ ಮತ್ತು ಹಗ್ಗದ ಮಾದರಿಯ ಸರಗಳು.",
+      "display_order": 4,
+      "is_active": true
+    },
+    {
+      "id": 5,
+      "name_en": "Agra Payal",
+      "name_kn": "ಆಗ್ರಾ ಕಾಲುಂಗುರ / ಪಾಯಲ್",
+      "slug": "agra-payal",
+      "description_en": "Genuine Agra silver-plated anklets, traditional ghungroo payals, and bridal foot jewellery.",
+      "description_kn": "ಅಸಲಿ ಆಗ್ರಾ ಸಿಲ್ವರ್ ಕೋಟೆಡ್ ಕಾಲುಂಗುರಗಳು, ಗಂಟಿನ ಪಾಯಲ್‌ಗಳು ಮತ್ತು ವಧುವಿನ ಕಾಲು ಆಭರಣಗಳು.",
+      "display_order": 5,
+      "is_active": true
+    },
+    {
+      "id": 6,
+      "name_en": "Finger Rings & Lockets",
+      "name_kn": "ಉಂಗುರಗಳು & ಲಾಕೆಟ್‌ಗಳು",
+      "slug": "finger-rings-lockets",
+      "description_en": "Adjustable CZ finger rings, deity pendants, and designer daily wear lockets.",
+      "description_kn": "ಹೊಂದಾಣಿಕೆ ಮಾಡಬಹುದಾದ ಸಿ.ಝಡ್. ಉಂಗುರಗಳು, ದೇವರ ಪೆಂಡೆಂಟ್‌ಗಳು ಮತ್ತು ಆಕರ್ಷಕ ಲಾಕೆಟ್‌ಗಳು.",
+      "display_order": 6,
+      "is_active": true
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "category_id": 2,
+      "sku": "MN-VJ-1250",
+      "name_en": "Royal Kemp Stone Antique Kada / Bajuband Pair",
+      "name_kn": "ರಾಯಲ್ ಕೆಂಪ್ ಕಲ್ಲು ಆಂಟಿಕ್ ಕಡಾ / ಬಾಜುಬಂದ್ ಜೋಡಿ",
+      "description_en": "Traditional South Indian antique gold finish kada pair studded with sparkling emerald and ruby kemp stones and hanging golden cluster drops. 24K micro-gold plated brass base for wedding longevity.",
+      "description_kn": "ಸಾಂಪ್ರದಾಯಿಕ ದಕ್ಷಿಣ ಭಾರತೀಯ ಆಂಟಿಕ್ ಗೋಲ್ಡ್ ಫಿನಿಶ್ ಕಡಾ ಜೋಡಿ, ಹೊಳೆಯುವ ಕೆಂಪು ಮತ್ತು ಹಸಿರು ಕೆಂಪ್ ಕಲ್ಲುಗಳಿಂದ ಕೂಡಿದೆ.",
+      "retail_price": 2650,
+      "wholesale_price": 1250,
+      "min_order_qty": 6,
+      "weight_grams": 95,
+      "purity_finish": "24K Micro-Gold Electroplate",
+      "is_active": true,
+      "primary_image": "/assets/products/kada-1250.jpg"
+    },
+    {
+      "id": 12,
+      "category_id": 2,
+      "sku": "MN-PB-450",
+      "name_en": "Classic Micro-Gold Daily Wear Patli Bangles Set of 4",
+      "name_kn": "ಕ್ಲಾಸಿಕ್ ಮೈಕ್ರೋ-ಗೋಲ್ಡ್ ನಿತ್ಯೋಪಯೋಗಿ ಪಟ್ಲಿ ಬಳೆಗಳು (4ರ ಸೆಟ್)",
+      "description_en": "Set of 4 slender, high-luster micro gold plated patli bangles with milled beaded edges for daily elegance and durability.",
+      "description_kn": "4 ತೆಳುವಾದ, ಉತ್ತಮ ಹೊಳಪಿನ ಮೈಕ್ರೋ ಗೋಲ್ಡ್ ಪ್ಲೇಟೆಡ್ ಪಟ್ಲಿ ಬಳೆಗಳು.",
+      "retail_price": 899,
+      "wholesale_price": 450,
+      "min_order_qty": 12,
+      "weight_grams": 42,
+      "purity_finish": "Roldgold Guarantee",
+      "is_active": true,
+      "primary_image": "/assets/products/bangles-450.jpg"
+    },
+    {
+      "id": 13,
+      "category_id": 2,
+      "sku": "MN-PB-850",
+      "name_en": "Diamond-Cut Textured Royal 1-Gram Gold Patli Bangle Set of 4",
+      "name_kn": "ಡೈಮಂಡ್-ಕಟ್ ವಿನ್ಯಾಸದ ರಾಯಲ್ 1-ಗ್ರಾಂ ಗೋಲ್ಡ್ ಪಟ್ಲಿ ಬಳೆಗಳು",
+      "description_en": "Set of 4 premium 1-gram gold patli bangles featuring precision diamond-cut starburst facets that sparkle like solid 22k gold.",
+      "description_kn": "ಡೈಮಂಡ್-ಕಟ್ ವಿನ್ಯಾಸದ ಪ್ರೀಮಿಯಂ 1-ಗ್ರಾಂ ಗೋಲ್ಡ್ ಪಟ್ಲಿ ಬಳೆಗಳ ಸೆಟ್.",
+      "retail_price": 1699,
+      "wholesale_price": 850,
+      "min_order_qty": 6,
+      "weight_grams": 56,
+      "purity_finish": "1-Gram Roldgold",
+      "is_active": true,
+      "primary_image": "/assets/products/bangles-850.jpg"
+    },
+    {
+      "id": 14,
+      "category_id": 2,
+      "sku": "MN-PB-950",
+      "name_en": "Antique Temple Nakshi Elephant Face Kada Single",
+      "name_kn": "ಆಂಟಿಕ್ ಟೆಂಪಲ್ ನಕ್ಷಿ ಗಜ ಮುಖದ ಕಡಾ",
+      "description_en": "Grand antique gold kada featuring hand-carved Gaja (Elephant) motif terminals with ruby kemp eyes and floral repousse body.",
+      "description_kn": "ಭವ್ಯ ಆಂಟಿಕ್ ಗೋಲ್ಡ್ ಗಜ ಮುಖದ ಕಡಾ, ಕೆಂಪು ಕಲ್ಲುಗಳಿಂದ ಅಲಂಕೃತವಾಗಿದೆ.",
+      "retail_price": 1899,
+      "wholesale_price": 950,
+      "min_order_qty": 4,
+      "weight_grams": 68,
+      "purity_finish": "Antique Matte Finish",
+      "is_active": true,
+      "primary_image": "/assets/products/kada-950.jpg"
+    },
+    {
+      "id": 2,
+      "category_id": 3,
+      "sku": "MN-NK-1080",
+      "name_en": "Heritage Temple Haram Long Necklace with Floral Pendant",
+      "name_kn": "ಸಾಂಪ್ರದಾಯಿಕ ದೇವಸ್ಥಾನ ಹಾರ ಉದ್ದನೆಯ ನೆಕ್ಲೇಸ್",
+      "description_en": "Exquisite South Indian temple haram long necklace set on dark velvet display, embossed with floral and leaf motifs and teardrop ruby emerald stones with micro-cluster tassels.",
+      "description_kn": "ಭವ್ಯವಾದ ದಕ್ಷಿಣ ಭಾರತೀಯ ದೇವಸ್ಥಾನ ಶೈಲಿಯ ಉದ್ದನೆಯ ಹಾರ, ಕೆಂಪು ಹಸಿರು ಕಲ್ಲುಗಳಿಂದ ಕೂಡಿದೆ.",
+      "retail_price": 2450,
+      "wholesale_price": 1080,
+      "min_order_qty": 4,
+      "weight_grams": 82,
+      "purity_finish": "24K Micro-Gold Electroplate",
+      "is_active": true,
+      "primary_image": "/assets/products/haram-1080.jpg"
+    },
+    {
+      "id": 15,
+      "category_id": 3,
+      "sku": "MN-NK-1450",
+      "name_en": "Royal Lakshmi Kasu Malai Antique Long Temple Haram",
+      "name_kn": "ರಾಯಲ್ ಲಕ್ಷ್ಮೀ ಕಾಸು ಮಾಲೆ ಆಂಟಿಕ್ ಉದ್ದನೆಯ ದೇವಸ್ಥಾನ ಹಾರ",
+      "description_en": "Traditional South Indian Kasu Malai featuring overlapping embossed Goddess Lakshmi coins with ruby kemp cabochons and droplet tassels.",
+      "description_kn": "ಸಾಂಪ್ರದಾಯಿಕ ಲಕ್ಷ್ಮೀ ಕಾಸಿನ ಮಾಲೆ, ಶುಭ ಸಮಾರಂಭಗಳಿಗೆ ಸೂಕ್ತ.",
+      "retail_price": 2899,
+      "wholesale_price": 1450,
+      "min_order_qty": 3,
+      "weight_grams": 110,
+      "purity_finish": "Antique Temple Gold",
+      "is_active": true,
+      "primary_image": "/assets/products/haram-1450.jpg"
+    },
+    {
+      "id": 16,
+      "category_id": 3,
+      "sku": "MN-NK-980",
+      "name_en": "Traditional Peacock Nakshi Bridal Choker with Kemp Stones",
+      "name_kn": "ಸಾಂಪ್ರದಾಯಿಕ ನವಿಲು ನಕ್ಷಿ ಬ್ರೈಡಲ್ ಚೋಕರ್ ನೆಕ್ಲೇಸ್",
+      "description_en": "Opulent South Indian antique gold choker necklace with dancing peacock carvings, kemp stones, and golden ghungroo fringe.",
+      "description_kn": "ನವಿಲು ಕೆತ್ತನೆಯ ಆಂಟಿಕ್ ಗೋಲ್ಡ್ ಬ್ರೈಡಲ್ ಚೋಕರ್.",
+      "retail_price": 1950,
+      "wholesale_price": 980,
+      "min_order_qty": 4,
+      "weight_grams": 72,
+      "purity_finish": "Antique Matte Finish",
+      "is_active": true,
+      "primary_image": "/assets/products/choker-980.jpg"
+    },
+    {
+      "id": 17,
+      "category_id": 3,
+      "sku": "MN-NK-1650",
+      "name_en": "Grand Manga Malai South Indian Heritage Haram",
+      "name_kn": "ಗ್ರ್ಯಾಂಡ್ ಮಾವಿನಕಾಯಿ ಮಾಲೆ (ಮಂಗಾ ಮಾಲೈ) ಹೆರಿಟೇಜ್ ಹಾರ",
+      "description_en": "Classic South Indian Manga Malai (Mango motif chain) studded with ruby cabochons and detailed gold leaf repousse.",
+      "description_kn": "ಶಾಸ್ತ್ರೀಯ ದಕ್ಷಿಣ ಭಾರತೀಯ ಮಾವಿನಕಾಯಿ ವಿನ್ಯಾಸದ ಹಾರ.",
+      "retail_price": 3299,
+      "wholesale_price": 1650,
+      "min_order_qty": 2,
+      "weight_grams": 125,
+      "purity_finish": "24K Micro-Gold Electroplate",
+      "is_active": true,
+      "primary_image": "/assets/products/haram-1650.jpg"
+    },
+    {
+      "id": 18,
+      "category_id": 5,
+      "sku": "MN-AP-650",
+      "name_en": "Royal Heritage Agra Meenakari Enamelled Bridal Payal Pair",
+      "name_kn": "ರಾಯಲ್ ಹೆರಿಟೇಜ್ ಆಗ್ರಾ ಮೀನಾಕಾರಿ ಬ್ರೈಡಲ್ ಪಾಯಲ್ ಜೋಡಿ",
+      "description_en": "Authentic Agra silver plated bridal payal pair with vivid ruby-red and green meenakari enamel medallions and cascading musical ghungroo bells.",
+      "description_kn": "ಅಸಲಿ ಆಗ್ರಾ ಸಿಲ್ವರ್ ಕೋಟೆಡ್ ಮೀನಾಕಾರಿ ಬ್ರೈಡಲ್ ಕಾಲುಂಗುರ / ಪಾಯಲ್ ಜೋಡಿ.",
+      "retail_price": 1299,
+      "wholesale_price": 650,
+      "min_order_qty": 6,
+      "weight_grams": 130,
+      "purity_finish": "Agra Chandi Polish",
+      "is_active": true,
+      "primary_image": "/assets/products/payal-650.jpg"
+    },
+    {
+      "id": 19,
+      "category_id": 5,
+      "sku": "MN-AP-350",
+      "name_en": "Genuine Agra Daily-Wear Silver Coated Ghungroo Payal Pair",
+      "name_kn": "ಅಸಲಿ ಆಗ್ರಾ ನಿತ್ಯೋಪಯೋಗಿ ಬೆಳ್ಳಿ ಕೋಟೆಡ್ ಗಂಟಿನ ಪಾಯಲ್ ಜೋಡಿ",
+      "description_en": "Durable daily wear silver coated payals from Agra with rhythmic sweet-sounding ghungroo bells and sturdy S-hook clasp.",
+      "description_kn": "ನಿತ್ಯ ಧರಿಸಲು ಯೋಗ್ಯವಾದ ಆಗ್ರಾ ಬೆಳ್ಳಿ ಕೋಟೆಡ್ ಪಾಯಲ್ ಜೋಡಿ.",
+      "retail_price": 699,
+      "wholesale_price": 350,
+      "min_order_qty": 10,
+      "weight_grams": 75,
+      "purity_finish": "Agra Silver Plated",
+      "is_active": true,
+      "primary_image": "/assets/products/payal-350.jpg"
+    },
+    {
+      "id": 20,
+      "category_id": 5,
+      "sku": "MN-AP-480",
+      "name_en": "Traditional Broad Bridal Agra Chandi Finish Payal Pair",
+      "name_kn": "ಸಾಂಪ್ರದಾಯಿಕ ಅಗಲವಾದ ಆಗ್ರಾ ಚಾಂದಿ ಫಿನಿಶ್ ಬ್ರೈಡಲ್ ಪಾಯಲ್",
+      "description_en": "Heavy traditional broad mesh bridal anklets with double-layer bell drops and embossed antique flower joints.",
+      "description_kn": "ಭಾರವಾದ ಸಾಂಪ್ರದಾಯಿಕ ಆಗ್ರಾ ಮದುವೆ ಪಾಯಲ್ ಜೋಡಿ.",
+      "retail_price": 999,
+      "wholesale_price": 480,
+      "min_order_qty": 6,
+      "weight_grams": 115,
+      "purity_finish": "Agra Chandi Polish",
+      "is_active": true,
+      "primary_image": "/assets/products/payal-480.jpg"
+    },
+    {
+      "id": 21,
+      "category_id": 5,
+      "sku": "MN-AP-220",
+      "name_en": "Handcrafted Agra Daily Silver Anklet with Delicate Beads",
+      "name_kn": "ಆಗ್ರಾ ಸೂಕ್ಷ್ಮ ಮಣಿಗಳುಳ್ಳ ಬೆಳ್ಳಿ ಸರ ಪಾಯಲ್ ಜೋಡಿ",
+      "description_en": "Lightweight and chic silver plated daily anklets with polished silver bead stations and gentle musical bells.",
+      "description_kn": "ಹಗುರವಾದ ಮತ್ತು ಸುಂದರವಾದ ಆಗ್ರಾ ಸಿಲ್ವರ್ ಆಂಕ್ಲೆಟ್.",
+      "retail_price": 450,
+      "wholesale_price": 220,
+      "min_order_qty": 12,
+      "weight_grams": 38,
+      "purity_finish": "Agra Silver Plated",
+      "is_active": true,
+      "primary_image": "/assets/products/payal-220.jpg"
+    },
+    {
+      "id": 3,
+      "category_id": 1,
+      "sku": "MN-CH-650",
+      "name_en": "Classic Kemp Stone Floral Pendant Long Chain",
+      "name_kn": "ಕ್ಲಾಸಿಕ್ ಕೆಂಪ್ ಕಲ್ಲು ಹೂವಿನ ಲಾಕೆಟ್ ಸರ",
+      "description_en": "Delicate 1-gram gold plated chain with central floral kemp pendant and hanging droplet accents. Perfect for festive and temple functions.",
+      "description_kn": "ಕೆಂಪ್ ಕಲ್ಲಿನ ಹೂವಿನ ಲಾಕೆಟ್ ಹೊಂದಿರುವ ಆಕರ್ಷಕ ಸರ.",
+      "retail_price": 1450,
+      "wholesale_price": 650,
+      "min_order_qty": 10,
+      "weight_grams": 35,
+      "purity_finish": "1-Gram Roldgold",
+      "is_active": true,
+      "primary_image": "/assets/products/pendant-650.jpg"
+    },
+    {
+      "id": 22,
+      "category_id": 1,
+      "sku": "MN-CZ-850",
+      "name_en": "Premium Ruby-Green Kemp Bridal Choker Set with Matching Jhumkas",
+      "name_kn": "ಪ್ರೀಮಿಯಂ ಕೆಂಪು-ಹಸಿರು ಕೆಂಪ್ ಬ್ರೈಡಲ್ ಚೋಕರ್ & ಜುಮ್ಕಿ ಸೆಟ್",
+      "description_en": "Festive South Indian choker set with matching temple jhumkas, encrusted with kempu cabochons and lustrous pearl drops.",
+      "description_kn": "ಮದುವೆ ಹಾಗೂ ಹಬ್ಬಗಳಿಗೆ ಸೂಕ್ತವಾದ ಕೆಂಪ್ ಚೋಕರ್ ಮತ್ತು ಜುಮ್ಕಿ ಸೆಟ್.",
+      "retail_price": 1750,
+      "wholesale_price": 850,
+      "min_order_qty": 6,
+      "weight_grams": 85,
+      "purity_finish": "Matte Antique Finish",
+      "is_active": true,
+      "primary_image": "/assets/products/cz-choker-850.jpg"
+    },
+    {
+      "id": 23,
+      "category_id": 1,
+      "sku": "MN-CZ-1150",
+      "name_en": "Matte Antique Goddess Lakshmi Pendant Necklace Set",
+      "name_kn": "ಮ್ಯಾಟ್ ಆಂಟಿಕ್ ಲಕ್ಷ್ಮೀ ದೇವಿ ಪೆಂಡೆಂಟ್ ನೆಕ್ಲೇಸ್ ಸೆಟ್",
+      "description_en": "High-grade matte gold necklace set with presiding Lakshmi motif, high-sparkle cubic zirconia, and emerald kemp stones.",
+      "description_kn": "ಲಕ್ಷ್ಮೀ ದೇವಿ ಕೆತ್ತನೆಯ ಮ್ಯಾಟ್ ಆಂಟಿಕ್ ನೆಕ್ಲೇಸ್ ಸೆಟ್.",
+      "retail_price": 2299,
+      "wholesale_price": 1150,
+      "min_order_qty": 4,
+      "weight_grams": 98,
+      "purity_finish": "Matte Antique Finish",
+      "is_active": true,
+      "primary_image": "/assets/products/matte-set-1150.jpg"
+    },
+    {
+      "id": 4,
+      "category_id": 4,
+      "sku": "MN-RG-700",
+      "name_en": "Micro Gold Flat Mesh Mangalsutra Chain with Black Beads",
+      "name_kn": "ಮೈಕ್ರೋ ಗೋಲ್ಡ್ ಫ್ಲ್ಯಾಟ್ ಮೆಶ್ ಮಾಂಗಲ್ಯ ಸರ ಕರಿಮಣಿ",
+      "description_en": "Sleek and durable daily-wear micro-gold flat mesh link chain with alternating auspicious black bead stations.",
+      "description_kn": "ನಿತ್ಯ ಧರಿಸಲು ಸೂಕ್ತವಾದ ಮೈಕ್ರೋ-ಗೋಲ್ಡ್ ಫ್ಲ್ಯಾಟ್ ಮೆಶ್ ಮಾಂಗಲ್ಯ ಸರ ಕರಿಮಣಿ.",
+      "retail_price": 1550,
+      "wholesale_price": 700,
+      "min_order_qty": 10,
+      "weight_grams": 28,
+      "purity_finish": "Roldgold Guarantee",
+      "is_active": true,
+      "primary_image": "/assets/products/chain-700.jpg",
+      "craft_image": "/assets/products/chain-700-craft.jpg"
+    },
+    {
+      "id": 5,
+      "category_id": 4,
+      "sku": "MN-RG-1050",
+      "name_en": "Dual Strand Box Link Gold Chain with Black Bead Stations",
+      "name_kn": "ಡಬಲ್ ಎಳೆ ಬಾಕ್ಸ್ ಲಿಂಕ್ ಗೋಲ್ಡ್ ಚೈನ್ ಕರಿಮಣಿ ಸರ",
+      "description_en": "Double line box chain handcrafted with genuine 1-year guarantee roldgold finish and midnight black crystal beads.",
+      "description_kn": "ಡಬಲ್ ಎಳೆ ಬಾಕ್ಸ್ ಲಿಂಕ್ ಗೋಲ್ಡ್ ಚೈನ್ ಕರಿಮಣಿ ಸರ.",
+      "retail_price": 2250,
+      "wholesale_price": 1050,
+      "min_order_qty": 6,
+      "weight_grams": 38,
+      "purity_finish": "Roldgold Guarantee",
+      "is_active": true,
+      "primary_image": "/assets/products/chain-1050.jpg",
+      "craft_image": "/assets/products/chain-1050-craft.jpg"
+    },
+    {
+      "id": 6,
+      "category_id": 4,
+      "sku": "MN-RG-1200",
+      "name_en": "Traditional Double Strand 1-Gram Gold Chain with Clusters",
+      "name_kn": "ಸಾಂಪ್ರದಾಯಿಕ ಡಬಲ್ ಎಳೆ 1-ಗ್ರಾಂ ಗೋಲ್ಡ್ ಚೈನ್",
+      "description_en": "Rich double-strand micro-electroplated gold chain with spaced black bead cluster segments for festive grandeur.",
+      "description_kn": "ಸಾಂಪ್ರದಾಯಿಕ ಡಬಲ್ ಎಳೆ 1-ಗ್ರಾಂ ಗೋಲ್ಡ್ ಚೈನ್.",
+      "retail_price": 2600,
+      "wholesale_price": 1200,
+      "min_order_qty": 6,
+      "weight_grams": 44,
+      "purity_finish": "1-Gram Roldgold",
+      "is_active": true,
+      "primary_image": "/assets/products/chain-1200.jpg",
+      "craft_image": "/assets/products/chain-1200-craft.jpg"
+    },
+    {
+      "id": 7,
+      "category_id": 4,
+      "sku": "MN-RG-1250",
+      "name_en": "Heritage Double Strand Gold Box Chain with Black Crystals",
+      "name_kn": "ಹೆರಿಟೇಜ್ ಡಬಲ್ ಎಳೆ ಗೋಲ್ಡ್ ಬಾಕ್ಸ್ ಚೈನ್",
+      "description_en": "Heavy-gauge double strand box links interlocking with faceted black crystal beads for lasting bridal heirloom luster.",
+      "description_kn": "ಹೆರಿಟೇಜ್ ಡಬಲ್ ಎಳೆ ಗೋಲ್ಡ್ ಬಾಕ್ಸ್ ಚೈನ್.",
+      "retail_price": 2750,
+      "wholesale_price": 1250,
+      "min_order_qty": 6,
+      "weight_grams": 46,
+      "purity_finish": "1-Gram Roldgold",
+      "is_active": true,
+      "primary_image": "/assets/products/chain-1250.jpg",
+      "craft_image": "/assets/products/chain-1250-craft.jpg"
+    },
+    {
+      "id": 8,
+      "category_id": 4,
+      "sku": "MN-RG-1500",
+      "name_en": "Premium Double Flat Ribbon 1-Gram Gold Thali Chain",
+      "name_kn": "ಪ್ರೀಮಿಯಂ ಡಬಲ್ ಫ್ಲ್ಯಾಟ್ ರಿಬ್ಬನ್ 1-ಗ್ರಾಂ ಗೋಲ್ಡ್ ತಾಳಿ ಚೈನ್",
+      "description_en": "Wide double flat ribbon herringbone links with reinforced black bead segments, offering authentic sovereign gold appearance.",
+      "description_kn": "ಪ್ರೀಮಿಯಂ ಡಬಲ್ ಫ್ಲ್ಯಾಟ್ ರಿಬ್ಬನ್ 1-ಗ್ರಾಂ ಗೋಲ್ಡ್ ತಾಳಿ ಚೈನ್.",
+      "retail_price": 3250,
+      "wholesale_price": 1500,
+      "min_order_qty": 4,
+      "weight_grams": 54,
+      "purity_finish": "1-Gram Roldgold",
+      "is_active": true,
+      "primary_image": "/assets/products/chain-1500.jpg",
+      "craft_image": "/assets/products/chain-1500-craft.jpg"
+    },
+    {
+      "id": 9,
+      "category_id": 4,
+      "sku": "MN-RG-1550",
+      "name_en": "Royal Double Layered Thali Chain with Black Bead Motifs",
+      "name_kn": "ರಾಯಲ್ ಡಬಲ್ ಲೇಯರ್ಡ್ ತಾಳಿ ಚೈನ್ ಕರಿಮಣಿ ವಿನ್ಯಾಸ",
+      "description_en": "Dual layered heavy thali chain featuring intricate golden beads and polished black stone accents, designed for Karnataka brides.",
+      "description_kn": "ರಾಯಲ್ ಡಬಲ್ ಲೇಯರ್ಡ್ ತಾಳಿ ಚೈನ್ ಕರಿಮಣಿ ವಿನ್ಯಾಸ.",
+      "retail_price": 3400,
+      "wholesale_price": 1550,
+      "min_order_qty": 4,
+      "weight_grams": 58,
+      "purity_finish": "Roldgold Guarantee",
+      "is_active": true,
+      "primary_image": "/assets/products/chain-1550.jpg",
+      "craft_image": "/assets/products/chain-1550-craft.jpg"
+    },
+    {
+      "id": 10,
+      "category_id": 4,
+      "sku": "MN-RG-1800",
+      "name_en": "Broad Double Strand Fancy Link Gold Chain with Black Beads",
+      "name_kn": "ಬ್ರಾಡ್ ಡಬಲ್ ಎಳೆ ಫ್ಯಾನ್ಸಿ ಲಿಂಕ್ ಗೋಲ್ಡ್ ಚೈನ್",
+      "description_en": "Heavy weight broad double strand fancy interlocking links with twin-bead clusters for celebratory occasions.",
+      "description_kn": "ಬ್ರಾಡ್ ಡಬಲ್ ಎಳೆ ಫ್ಯಾನ್ಸಿ ಲಿಂಕ್ ಗೋಲ್ಡ್ ಚೈನ್.",
+      "retail_price": 3950,
+      "wholesale_price": 1800,
+      "min_order_qty": 4,
+      "weight_grams": 65,
+      "purity_finish": "Roldgold Guarantee",
+      "is_active": true,
+      "primary_image": "/assets/products/chain-1800.jpg",
+      "craft_image": "/assets/products/chain-1800-craft.jpg"
+    },
+    {
+      "id": 11,
+      "category_id": 4,
+      "sku": "MN-RG-2500",
+      "name_en": "Opulent Grand 36-Inch Double Strand Bridal Gold Chain",
+      "name_kn": "ಭವ್ಯ ಗ್ರ್ಯಾಂಡ್ 36-ಇಂಚು ಡಬಲ್ ಎಳೆ ಬ್ರೈಡಲ್ ಗೋಲ್ಡ್ ಚೈನ್",
+      "description_en": "Masterpiece 36-inch continuous double-strand bridal chain with supreme gold density, high-micron plating, and triple-knotted black beads.",
+      "description_kn": "ಭವ್ಯ ಗ್ರ್ಯಾಂಡ್ 36-ಇಂಚು ಡಬಲ್ ಎಳೆ ಬ್ರೈಡಲ್ ಗೋಲ್ಡ್ ಚೈನ್.",
+      "retail_price": 5400,
+      "wholesale_price": 2500,
+      "min_order_qty": 2,
+      "weight_grams": 88,
+      "purity_finish": "24K Micro-Gold Electroplate",
+      "is_active": true,
+      "primary_image": "/assets/products/chain-2500.jpg",
+      "craft_image": "/assets/products/chain-2500-craft.jpg"
+    },
+    {
+      "id": 24,
+      "category_id": 6,
+      "sku": "MN-FR-280",
+      "name_en": "Adjustable Floral CZ Micro-Gold Plated Finger Ring",
+      "name_kn": "ಅಡ್ಜಸ್ಟಬಲ್ ಹೂವಿನ ಸಿ.ಝಡ್. ಮೈಕ್ರೋ ಗೋಲ್ಡ್ ಉಂಗುರ",
+      "description_en": "Dazzling cubic zirconia floral cluster finger ring with adjustable shank in 24k micro-gold plating.",
+      "description_kn": "ಹೊಳೆಯುವ ಸಿ.ಝಡ್. ಹೂವಿನ ಮಾದರಿಯ ಅಡ್ಜಸ್ಟಬಲ್ ಗೋಲ್ಡ್ ಉಂಗುರ.",
+      "retail_price": 599,
+      "wholesale_price": 280,
+      "min_order_qty": 12,
+      "weight_grams": 12,
+      "purity_finish": "24K Micro-Gold Electroplate",
+      "is_active": true,
+      "primary_image": "/assets/products/ring-280.jpg"
+    },
+    {
+      "id": 25,
+      "category_id": 6,
+      "sku": "MN-LK-320",
+      "name_en": "Auspicious Lord Ganesha Embossed 1-Gram Gold Temple Locket",
+      "name_kn": "ಶುಭ ಗಣೇಶ ಕೆತ್ತನೆಯ 1-ಗ್ರಾಂ ಗೋಲ್ಡ್ ದೇವಸ್ಥಾನ ಲಾಕೆಟ್",
+      "description_en": "Sacred Vighnaharta Ganesha embossed temple locket with fine antique filigree border and ruby stone accent.",
+      "description_kn": "ಗಣಪತಿ ಕೆತ್ತನೆಯ ಸಾಂಪ್ರದಾಯಿಕ 1-ಗ್ರಾಂ ಗೋಲ್ಡ್ ಲಾಕೆಟ್.",
+      "retail_price": 650,
+      "wholesale_price": 320,
+      "min_order_qty": 10,
+      "weight_grams": 18,
+      "purity_finish": "1-Gram Roldgold",
+      "is_active": true,
+      "primary_image": "/assets/products/locket-320.jpg"
+    },
+    {
+      "id": 26,
+      "category_id": 6,
+      "sku": "MN-LK-380",
+      "name_en": "Goddess Mahalakshmi Heritage Coin Pendant Locket",
+      "name_kn": "ಮಹಾಲಕ್ಷ್ಮೀ ದೇವಿ ಹೆರಿಟೇಜ್ ಕಾಯಿನ್ ಪೆಂಡೆಂಟ್ ಲಾಕೆಟ್",
+      "description_en": "Auspicious Lakshmi Devi coin locket surrounded by micro-pearl beading and radiant gold electroplate for prosperity.",
+      "description_kn": "ಮಹಾಲಕ್ಷ್ಮೀ ನಾವೆಲ್ಟೀಸ್ ಸಿಗ್ನೇಚರ್ ಲಕ್ಷ್ಮೀ ದೇವಿ ಕಾಯಿನ್ ಲಾಕೆಟ್.",
+      "retail_price": 799,
+      "wholesale_price": 380,
+      "min_order_qty": 10,
+      "weight_grams": 22,
+      "purity_finish": "24K Micro-Gold Electroplate",
+      "is_active": true,
+      "primary_image": "/assets/products/locket-380.jpg"
+    }
+  ],
+  "product_images": [
+    {
+      "id": 1,
+      "product_id": 1,
+      "image_url": "/assets/products/kada-1250.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 2,
+      "product_id": 12,
+      "image_url": "/assets/products/bangles-450.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 3,
+      "product_id": 13,
+      "image_url": "/assets/products/bangles-850.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 4,
+      "product_id": 14,
+      "image_url": "/assets/products/kada-950.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 5,
+      "product_id": 2,
+      "image_url": "/assets/products/haram-1080.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 6,
+      "product_id": 15,
+      "image_url": "/assets/products/haram-1450.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 7,
+      "product_id": 16,
+      "image_url": "/assets/products/choker-980.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 8,
+      "product_id": 17,
+      "image_url": "/assets/products/haram-1650.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 9,
+      "product_id": 18,
+      "image_url": "/assets/products/payal-650.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 10,
+      "product_id": 19,
+      "image_url": "/assets/products/payal-350.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 11,
+      "product_id": 20,
+      "image_url": "/assets/products/payal-480.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 12,
+      "product_id": 21,
+      "image_url": "/assets/products/payal-220.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 13,
+      "product_id": 3,
+      "image_url": "/assets/products/pendant-650.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 14,
+      "product_id": 22,
+      "image_url": "/assets/products/cz-choker-850.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 15,
+      "product_id": 23,
+      "image_url": "/assets/products/matte-set-1150.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 16,
+      "product_id": 4,
+      "image_url": "/assets/products/chain-700.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 17,
+      "product_id": 4,
+      "image_url": "/assets/products/chain-700-craft.jpg",
+      "is_primary": false,
+      "display_order": 2
+    },
+    {
+      "id": 18,
+      "product_id": 5,
+      "image_url": "/assets/products/chain-1050.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 19,
+      "product_id": 5,
+      "image_url": "/assets/products/chain-1050-craft.jpg",
+      "is_primary": false,
+      "display_order": 2
+    },
+    {
+      "id": 20,
+      "product_id": 6,
+      "image_url": "/assets/products/chain-1200.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 21,
+      "product_id": 6,
+      "image_url": "/assets/products/chain-1200-craft.jpg",
+      "is_primary": false,
+      "display_order": 2
+    },
+    {
+      "id": 22,
+      "product_id": 7,
+      "image_url": "/assets/products/chain-1250.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 23,
+      "product_id": 7,
+      "image_url": "/assets/products/chain-1250-craft.jpg",
+      "is_primary": false,
+      "display_order": 2
+    },
+    {
+      "id": 24,
+      "product_id": 8,
+      "image_url": "/assets/products/chain-1500.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 25,
+      "product_id": 8,
+      "image_url": "/assets/products/chain-1500-craft.jpg",
+      "is_primary": false,
+      "display_order": 2
+    },
+    {
+      "id": 26,
+      "product_id": 9,
+      "image_url": "/assets/products/chain-1550.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 27,
+      "product_id": 9,
+      "image_url": "/assets/products/chain-1550-craft.jpg",
+      "is_primary": false,
+      "display_order": 2
+    },
+    {
+      "id": 28,
+      "product_id": 10,
+      "image_url": "/assets/products/chain-1800.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 29,
+      "product_id": 10,
+      "image_url": "/assets/products/chain-1800-craft.jpg",
+      "is_primary": false,
+      "display_order": 2
+    },
+    {
+      "id": 30,
+      "product_id": 11,
+      "image_url": "/assets/products/chain-2500.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 31,
+      "product_id": 11,
+      "image_url": "/assets/products/chain-2500-craft.jpg",
+      "is_primary": false,
+      "display_order": 2
+    },
+    {
+      "id": 32,
+      "product_id": 24,
+      "image_url": "/assets/products/ring-280.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 33,
+      "product_id": 25,
+      "image_url": "/assets/products/locket-320.jpg",
+      "is_primary": true,
+      "display_order": 1
+    },
+    {
+      "id": 34,
+      "product_id": 26,
+      "image_url": "/assets/products/locket-380.jpg",
+      "is_primary": true,
+      "display_order": 1
+    }
+  ],
+  "product_variants": [],
+  "inventory": [
+    {
+      "id": 1,
+      "product_id": 1,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 2,
+      "product_id": 12,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 3,
+      "product_id": 13,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 4,
+      "product_id": 14,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 5,
+      "product_id": 2,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 6,
+      "product_id": 15,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 7,
+      "product_id": 16,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 8,
+      "product_id": 17,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 9,
+      "product_id": 18,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 10,
+      "product_id": 19,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 11,
+      "product_id": 20,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 12,
+      "product_id": 21,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 13,
+      "product_id": 3,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 14,
+      "product_id": 22,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 15,
+      "product_id": 23,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 16,
+      "product_id": 4,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 17,
+      "product_id": 5,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 18,
+      "product_id": 6,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 19,
+      "product_id": 7,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 20,
+      "product_id": 8,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 21,
+      "product_id": 9,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 22,
+      "product_id": 10,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 23,
+      "product_id": 11,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 24,
+      "product_id": 24,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 25,
+      "product_id": 25,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    },
+    {
+      "id": 26,
+      "product_id": 26,
+      "physical_stock": 100,
+      "reserved_stock": 0,
+      "low_stock_threshold": 10
+    }
+  ],
+  "inventory_transactions": [],
+  "carts": [],
+  "cart_items": [],
+  "orders": [],
+  "order_items": [],
+  "payments": [],
+  "deliveries": [],
+  "returns": [],
+  "delivery_pincodes": [
+    {
+      "id": 1,
+      "pin_code": "585101",
+      "locality_name": "Sangam Talkies / S.B. Temple Road / Market",
+      "delivery_fee": 30,
+      "min_order_amount": 200,
+      "estimated_delivery_hours": 12,
+      "is_active": true
+    },
+    {
+      "id": 2,
+      "pin_code": "585102",
+      "locality_name": "Station Road / Nehru Gunj / Kirana Bazaar",
+      "delivery_fee": 40,
+      "min_order_amount": 300,
+      "estimated_delivery_hours": 24,
+      "is_active": true
+    },
+    {
+      "id": 3,
+      "pin_code": "585103",
+      "locality_name": "MSK Mill / Ring Road / Aland Road",
+      "delivery_fee": 40,
+      "min_order_amount": 300,
+      "estimated_delivery_hours": 24,
+      "is_active": true
+    },
+    {
+      "id": 4,
+      "pin_code": "585104",
+      "locality_name": "Jewargi Colony / Sedam Road / High Court Area",
+      "delivery_fee": 50,
+      "min_order_amount": 400,
+      "estimated_delivery_hours": 24,
+      "is_active": true
+    },
+    {
+      "id": 5,
+      "pin_code": "585105",
+      "locality_name": "Shahabazar / Fort / Gazipur",
+      "delivery_fee": 40,
+      "min_order_amount": 300,
+      "estimated_delivery_hours": 24,
+      "is_active": true
+    }
+  ],
+  "business_settings": [
+    {
+      "setting_key": "store_name_en",
+      "setting_value": "Mahalaxmi Novelties"
+    },
+    {
+      "setting_key": "store_name_kn",
+      "setting_value": "ಮಹಾಲಕ್ಷ್ಮೀ ನಾವೆಲ್ಟೀಸ್"
+    },
+    {
+      "setting_key": "store_proprietor",
+      "setting_value": "Manoharsingh P. Rathore"
+    },
+    {
+      "setting_key": "store_address",
+      "setting_value": "Shop No. 8-713/13, Ground Floor, Sangam Talkies Complex, S.B. Temple Road, Kalaburagi - 585 101"
+    },
+    {
+      "setting_key": "store_tagline_en",
+      "setting_value": "Wholesale Dealers — No Sales Representative"
+    },
+    {
+      "setting_key": "store_phone",
+      "setting_value": "9481242188"
+    },
+    {
+      "setting_key": "store_whatsapp",
+      "setting_value": "9880042188"
+    },
+    {
+      "setting_key": "store_email",
+      "setting_value": "contact@mahalaxminovelties.com"
+    },
+    {
+      "setting_key": "upi_id",
+      "setting_value": "9481242188@okbizaxis"
+    },
+    {
+      "setting_key": "upi_name",
+      "setting_value": "Mahalaxmi Novelties"
+    },
+    {
+      "setting_key": "upi_qr_image",
+      "setting_value": "/uploads/default-upi-qr.svg"
+    },
+    {
+      "setting_key": "default_delivery_fee",
+      "setting_value": "40.00"
+    },
+    {
+      "setting_key": "free_delivery_threshold",
+      "setting_value": "1500.00"
+    },
+    {
+      "setting_key": "wholesale_min_order_total",
+      "setting_value": "2500.00"
+    }
+  ],
+  "notifications": []
+}

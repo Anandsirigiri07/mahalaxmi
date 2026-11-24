@@ -1,0 +1,11 @@
+{
+  "name": "mahalaxmi-novelties",
+  "version": "1.0.0",
+  "description": "Production B2B + B2C Jewellery E-Commerce Platform for Mahalaxmi Novelties, Kalaburagi",
+  "scripts": {
+    "start": "npm run start --prefix backend",
+    "server": "npm run start --prefix backend",
+    "client": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend"
+  }
+}

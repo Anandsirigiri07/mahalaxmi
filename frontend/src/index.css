@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: #280812;
+    color: #ffd9e0;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: #280812;
+    color: #ffd9e0;
+    overflow-x: hidden;
+  }
+
+  /* Opulent Wine & Gold scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #1D050D;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #9E7836;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #D4AF6A;
+  }
+}
+
+.font-kannada {
+  font-family: 'Noto Sans Kannada', 'Inter', sans-serif;
+}
+
+.font-serif-luxury {
+  font-family: 'EB Garamond', 'Cormorant Garamond', 'Cinzel', serif;
+}
+
+/* Lotus & Mandala Background Pattern */
+.bg-lotus-pattern {
+  background-image: radial-gradient(rgba(212, 175, 106, 0.12) 1px, transparent 1px),
+                    radial-gradient(rgba(240, 217, 160, 0.08) 1.5px, transparent 1.5px);
+  background-size: 24px 24px, 48px 48px;
+  background-position: 0 0, 12px 12px;
+}
+
+.hero-gradient {
+  background: linear-gradient(165deg, #1D050D 0%, #2A0A14 38%, #541624 72%, #6B1E2E 100%);
+}
+
+.perspective-container {
+  perspective: 900px;
+}
+
+.tilt-card-left {
+  transform: rotateY(12deg) rotateZ(-1.5deg) scale(0.94);
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease;
+}
+
+.tilt-card-center {
+  transform: rotateY(0deg) scale(1.05) translateZ(20px);
+  transform-style: preserve-3d;
+  box-shadow: 0 24px 45px -8px rgba(35, 7, 16, 0.55), 0 0 0 1px rgba(212, 175, 106, 0.5);
+}
+
+.tilt-card-right {
+  transform: rotateY(-12deg) rotateZ(1.5deg) scale(0.94);
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.gold-glow {
+  filter: drop-shadow(0 0 25px rgba(212, 175, 106, 0.45));
+}
+
+.gold-text-glow {
+  text-shadow: 0 2px 12px rgba(212, 175, 106, 0.35);
+}
+
+/* Glassmorphism Surface Tiers */
+.glass-wine-card {
+  background: rgba(42, 10, 20, 0.72);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(212, 175, 106, 0.28);
+}
+
+.glass-wine-drawer {
+  background: rgba(30, 8, 15, 0.92);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(240, 217, 160, 0.35);
+}
+
+.glass-gold-btn {
+  background: linear-gradient(135deg, #D4AF6A 0%, #F0D9A0 50%, #D4AF6A 100%);
+  color: #26211E;
+}

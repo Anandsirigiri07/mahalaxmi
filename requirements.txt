@@ -1,0 +1,32 @@
+# ==============================================================================
+# Mahalaxmi Novelties - Python Environment Requirements
+# Use for Python-based test suites, Gemini AI integration, database utilities & API testing
+# Install via: pip install -r requirements.txt
+# ==============================================================================
+
+# Core HTTP & API Client
+requests>=2.31.0
+urllib3>=2.0.7
+
+# Google Gemini & GenAI SDK (For AI Jewellery Stylist & Multimodal Analysis)
+google-generativeai>=0.8.3
+google-ai-generativelanguage>=0.6.10
+
+# Database & Storage
+mysql-connector-python>=8.3.0
+supabase>=2.11.0
+
+# Image & Media Processing (Jewellery Catalogs & Compression)
+Pillow>=10.2.0
+
+# Environment & Configuration Management
+python-dotenv>=1.0.1
+pydantic>=2.6.0
+
+# Testing & Quality Assurance
+pytest>=8.0.0
+pytest-asyncio>=0.23.5
+
+# Web Framework / Server Utilities (Optional Python microservices)
+fastapi>=0.110.0
+uvicorn>=0.28.0

@@ -2,6 +2,21 @@
   "version": 2,
   "buildCommand": "npm --prefix frontend run build",
   "outputDirectory": "frontend/dist",
+  "headers": [
+    {
+      "source": "/requirements.txt",
+      "headers": [
+        {
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"requirements.txt\""
+        },
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        }
+      ]
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",

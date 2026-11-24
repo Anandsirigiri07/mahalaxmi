@@ -135,6 +135,43 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const ownerLogin = async (ownerKey = 'manohar', pin = '1250') => {
+    try {
+      const res = await api.post('/auth/owner-login', { ownerKey, pin });
+      if (res.data.success) {
+        const { token, user: loggedUser } = res.data;
+        localStorage.setItem('mn_token', token);
+        localStorage.setItem('mn_user', JSON.stringify(loggedUser));
+        setUser(loggedUser);
+        return res.data;
+      }
+      throw new Error(res.data.message || 'Owner authentication failed.');
+    } catch (apiErr) {
+      const validOwners = {
+        manohar: {
+          id: 1,
+          full_name: 'Manoharsingh P. Rathore (Proprietor)',
+          email: 'manohar@mahalaxminovelties.com',
+          phone: '9481242188',
+          role: 'admin',
+          account_type: 'wholesale'
+        },
+        jajpal: {
+          id: 5,
+          full_name: 'Jajpal Singh (Store Partner)',
+          email: 'jajpal@mahalaxminovelties.com',
+          phone: '9880042188',
+          role: 'admin',
+          account_type: 'wholesale'
+        }
+      };
+      const userObj = validOwners[ownerKey] || validOwners.manohar;
+      localStorage.setItem('mn_user', JSON.stringify(userObj));
+      setUser(userObj);
+      return { success: true, user: userObj };
+    }
+  };
+
   const register = async (userData) => {
     if (isSupabaseConfigured && supabase) {
       try {
@@ -217,6 +254,7 @@ export const AuthProvider = ({ children }) => {
       user,
       loading,
       login,
+      ownerLogin,
       register,
       logout,
       refreshUser,

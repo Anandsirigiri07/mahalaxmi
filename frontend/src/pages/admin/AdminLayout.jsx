@@ -56,7 +56,7 @@ export default function AdminLayout() {
                   MAHALAXMI
                 </h2>
                 <span className="text-[10px] font-mono font-bold text-gold-light uppercase tracking-widest block">
-                  Admin Portal
+                  Proprietor Portal
                 </span>
               </div>
             </Link>
@@ -144,7 +144,7 @@ export default function AdminLayout() {
             <div className="flex items-center space-x-2">
               <span className="w-2 h-2 rounded-full bg-gold animate-pulse"></span>
               <span className="text-xs font-mono text-gold-light uppercase tracking-wider">
-                Kalaburagi Jewellery Hub Live
+                👑 Manoharsingh P. Rathore &amp; Jajpal Singh · Proprietor Executive
               </span>
             </div>
           </div>

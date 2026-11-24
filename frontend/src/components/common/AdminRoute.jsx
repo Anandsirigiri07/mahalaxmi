@@ -15,9 +15,9 @@ export default function AdminRoute({ children }) {
     );
   }
 
-  // If not logged in -> redirect to login page
+  // If not logged in -> redirect to proprietor owner portal
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/owner" state={{ from: location }} replace />;
   }
 
   // If logged in but not owner/admin -> show strict access restriction notice
@@ -29,17 +29,23 @@ export default function AdminRoute({ children }) {
             <ShieldAlert className="w-8 h-8 text-gold" />
           </div>
           <h2 className="font-serif text-2xl font-bold text-ivory gold-text-glow">
-            Owner Dashboard Restricted
+            Proprietor Access Restricted
           </h2>
           <p className="text-xs text-ivory/70 leading-relaxed">
-            This administrative dashboard is strictly reserved for the proprietor and authorized management of <strong className="text-gold-light">Mahalaxmi Novelties</strong>.
+            This dashboard is strictly reserved for store proprietors <strong className="text-gold-light">Manoharsingh P. Rathore</strong> &amp; <strong className="text-gold-light">Jajpal Singh</strong> of Mahalaxmi Novelties.
           </p>
-          <div className="pt-2">
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              to="/owner"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-gold via-gold-light to-gold text-wine-950 font-sans font-bold text-xs uppercase tracking-wider shadow-floating-gold hover:scale-105 transition"
+            >
+              👑 Proprietor Login
+            </Link>
             <Link
               to="/"
-              className="inline-block px-6 py-2.5 rounded-xl bg-gradient-to-r from-gold via-gold-light to-gold text-wine-950 font-sans font-bold text-xs uppercase tracking-wider shadow-floating-gold hover:scale-105 transition"
+              className="px-5 py-2.5 rounded-xl bg-black/40 border border-gold/30 text-gold-light font-sans font-semibold text-xs hover:bg-black/60 transition"
             >
-              Return to Storefront
+              Storefront
             </Link>
           </div>
         </div>

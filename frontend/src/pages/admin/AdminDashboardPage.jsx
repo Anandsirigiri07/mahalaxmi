@@ -107,6 +107,40 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
+      {/* Proprietor & Partner Executive Header Banner */}
+      <div className="bg-gradient-to-r from-wine-950 via-[#37141e] to-wine-950 border border-gold/40 rounded-3xl p-6 shadow-floating-gold text-ivory flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center space-x-2 px-3 py-0.5 rounded-full bg-gold/20 text-gold-light border border-gold/30 text-[11px] font-mono tracking-widest uppercase font-bold">
+            <span>👑 Proprietor &amp; Partner Executive Analysis</span>
+          </div>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-ivory gold-text-glow">
+            Mahalaxmi Novelties Store Dashboard
+          </h1>
+          <p className="text-xs text-ivory/70 flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span><strong>Proprietor:</strong> Manoharsingh P. Rathore (+91 94812 42188)</span>
+            <span>•</span>
+            <span><strong>Store Partner:</strong> Jajpal Singh (+91 98800 42188)</span>
+            <span>•</span>
+            <span>Sangam Talkies Complex, S.B. Temple Road, Kalaburagi</span>
+          </p>
+        </div>
+
+        <div className="flex items-center space-x-2.5">
+          <Link
+            to="/admin/products"
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-gold via-gold-light to-gold text-wine-950 text-xs font-bold uppercase tracking-wider shadow-sm hover:scale-105 transition"
+          >
+            Manage Products
+          </Link>
+          <Link
+            to="/admin/orders"
+            className="px-3.5 py-2 rounded-xl bg-black/40 border border-gold/40 text-gold-light text-xs font-bold uppercase tracking-wider hover:bg-black/60 transition"
+          >
+            View Orders
+          </Link>
+        </div>
+      </div>
+
       {/* 1. TOP ROW: 4 Pastel KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {/* KPI 1: Total Sales (₹) — Pastel Emerald */}

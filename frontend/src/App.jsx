@@ -21,6 +21,7 @@ import OrderSuccessPage from './pages/customer/OrderSuccessPage';
 import AccountPage from './pages/customer/AccountPage';
 import LoginPage from './pages/customer/LoginPage';
 import RegisterPage from './pages/customer/RegisterPage';
+import OwnerPortalPage from './pages/customer/OwnerPortalPage';
 
 // Admin Pages
 import AdminLayout from './pages/admin/AdminLayout';
@@ -67,6 +68,7 @@ export default function App() {
                 } />
                 <Route path="/login" element={<CustomerLayout><LoginPage /></CustomerLayout>} />
                 <Route path="/register" element={<CustomerLayout><RegisterPage /></CustomerLayout>} />
+                <Route path="/owner" element={<CustomerLayout><OwnerPortalPage /></CustomerLayout>} />
 
                 {/* Admin Portal (Protected by Admin Middleware) */}
                 <Route path="/admin" element={

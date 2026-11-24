@@ -29,23 +29,26 @@ export default function AdminRoute({ children }) {
             <ShieldAlert className="w-8 h-8 text-gold" />
           </div>
           <h2 className="font-serif text-2xl font-bold text-ivory gold-text-glow">
-            Proprietor Access Restricted
+            Owner Dashboard Restricted
           </h2>
           <p className="text-xs text-ivory/70 leading-relaxed">
-            This dashboard is strictly reserved for store proprietors <strong className="text-gold-light">Manoharsingh P. Rathore</strong> &amp; <strong className="text-gold-light">Jajpal Singh</strong> of Mahalaxmi Novelties.
+            Sales analytics, gross revenue, and store administration are strictly confidential and accessible only to the registered Store Owner (<strong className="text-gold-light">Manoharsingh P. Rathore</strong>).
+          </p>
+          <p className="text-[11px] text-ivory/60">
+            Customers and wholesale buyers can only browse novelty jewellery items and place wholesale orders.
           </p>
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
-              to="/owner"
+              to="/catalogue"
               className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-gold via-gold-light to-gold text-wine-950 font-sans font-bold text-xs uppercase tracking-wider shadow-floating-gold hover:scale-105 transition"
             >
-              👑 Proprietor Login
+              🛍️ Browse Jewellery Items
             </Link>
             <Link
-              to="/"
+              to="/owner"
               className="px-5 py-2.5 rounded-xl bg-black/40 border border-gold/30 text-gold-light font-sans font-semibold text-xs hover:bg-black/60 transition"
             >
-              Storefront
+              Owner Portal
             </Link>
           </div>
         </div>

@@ -60,27 +60,6 @@ export default function LoginPage() {
           )}
         </div>
 
-        {/* Store Owner Quick Portal */}
-        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-gold/15 via-gold/10 to-transparent border border-gold/40 flex items-center justify-between">
-          <div className="flex items-center space-x-2.5">
-            <span className="text-lg">👑</span>
-            <div>
-              <div className="text-xs font-serif font-bold text-gold-light">
-                Store Proprietor &amp; Partner?
-              </div>
-              <div className="text-[10px] text-ivory/70">
-                Manoharsingh P. Rathore &amp; Jajpal Singh
-              </div>
-            </div>
-          </div>
-          <Link
-            to="/owner"
-            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-gold via-gold-light to-gold text-wine-950 text-[10px] font-bold uppercase tracking-wider hover:scale-105 transition shadow-sm shrink-0"
-          >
-            Owner Portal →
-          </Link>
-        </div>
-
         {error && (
           <div className="p-3.5 rounded-xl bg-red-950/80 border border-red-500/50 text-red-200 text-xs flex items-center space-x-2">
             <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
@@ -139,11 +118,19 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="text-center pt-2 border-t border-gold/20 text-xs text-ivory/70">
-          New customer or wholesale jeweller?{' '}
-          <Link to="/register" className="text-gold font-bold hover:underline">
-            Register Account
-          </Link>
+        <div className="text-center pt-2 border-t border-gold/20 text-xs text-ivory/70 space-y-2">
+          <div>
+            New customer or wholesale jeweller?{' '}
+            <Link to="/register" className="text-gold font-bold hover:underline">
+              Register Account
+            </Link>
+          </div>
+          <div className="pt-1 text-[11px] text-ivory/50">
+            Store Proprietor?{' '}
+            <Link to="/owner" className="text-gold-light hover:underline font-semibold">
+              Owner Portal →
+            </Link>
+          </div>
         </div>
 
       </div>

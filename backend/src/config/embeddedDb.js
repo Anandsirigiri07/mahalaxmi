@@ -399,6 +399,11 @@ function executeQuery(sql, params = []) {
           };
         });
       }
+      if (lowerSql.includes("role = 'admin'")) {
+        const admins = (db.users || []).filter(u => u.role === 'admin' && u.is_active);
+        return admins;
+      }
+      return db.users || [];
     }
 
     // SELECT products

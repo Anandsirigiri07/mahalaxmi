@@ -132,7 +132,7 @@ export default function Footer() {
             © {new Date().getFullYear()} Mahalaxmi Novelties, Kalaburagi. All rights reserved.
           </p>
           <div className="flex items-center space-x-4">
-            <Link to="/login" className="hover:text-gold transition">Admin Access</Link>
+            <Link to="/owner" className="hover:text-gold transition">Proprietor Access</Link>
             <span>•</span>
             <Link to="/catalogue" className="hover:text-gold transition">Wholesale B2B</Link>
           </div>

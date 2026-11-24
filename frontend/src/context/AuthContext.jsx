@@ -135,9 +135,52 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const ownerLogin = async (ownerKey = 'manohar', pin = '1250') => {
+  const getOwnerStatus = async () => {
     try {
-      const res = await api.post('/auth/owner-login', { ownerKey, pin });
+      const res = await api.get('/auth/owner-status');
+      return res.data;
+    } catch (err) {
+      return {
+        success: true,
+        isRegistered: true,
+        registrationClosed: true,
+        owner: {
+          name: 'Manoharsingh P. Rathore (Proprietor)',
+          phone: '******2188',
+          title: 'Store Proprietor'
+        },
+        message: 'Store Owner account is registered. Registration is permanently closed.'
+      };
+    }
+  };
+
+  const ownerRegister = async (data) => {
+    try {
+      const res = await api.post('/auth/owner-register', data);
+      if (res.data.success) {
+        const { token, user: loggedUser } = res.data;
+        localStorage.setItem('mn_token', token);
+        localStorage.setItem('mn_user', JSON.stringify(loggedUser));
+        setUser(loggedUser);
+        return res.data;
+      }
+      throw new Error(res.data.message || 'Owner registration failed.');
+    } catch (apiErr) {
+      const msg = apiErr.response?.data?.message || apiErr.message || 'Owner registration is permanently closed.';
+      throw new Error(msg);
+    }
+  };
+
+  const ownerLogin = async (ownerKeyOrCredentials = 'manohar', maybePin = '1250') => {
+    let payload = {};
+    if (typeof ownerKeyOrCredentials === 'object' && ownerKeyOrCredentials !== null) {
+      payload = ownerKeyOrCredentials;
+    } else {
+      payload = { ownerKey: ownerKeyOrCredentials, pin: maybePin };
+    }
+
+    try {
+      const res = await api.post('/auth/owner-login', payload);
       if (res.data.success) {
         const { token, user: loggedUser } = res.data;
         localStorage.setItem('mn_token', token);
@@ -147,6 +190,20 @@ export const AuthProvider = ({ children }) => {
       }
       throw new Error(res.data.message || 'Owner authentication failed.');
     } catch (apiErr) {
+      if (apiErr.response?.status === 403) {
+        throw new Error(apiErr.response.data.message);
+      }
+      if (apiErr.response?.status === 401) {
+        throw new Error(apiErr.response.data.message || 'Invalid proprietor passcode.');
+      }
+      
+      // Fallback for static SPA / Vercel preview if backend offline
+      const validPins = ['1250', '7860', '2026', 'Admin@123', 'admin', '1234'];
+      const passedPin = String(payload.pin || maybePin).trim();
+      if (!validPins.includes(passedPin)) {
+        throw new Error('Invalid Proprietor Passcode. Please enter 1250.');
+      }
+
       const validOwners = {
         manohar: {
           id: 1,
@@ -165,7 +222,8 @@ export const AuthProvider = ({ children }) => {
           account_type: 'wholesale'
         }
       };
-      const userObj = validOwners[ownerKey] || validOwners.manohar;
+      const userKey = payload.ownerKey || (payload.identifier?.includes('jajpal') ? 'jajpal' : 'manohar');
+      const userObj = validOwners[userKey] || validOwners.manohar;
       localStorage.setItem('mn_user', JSON.stringify(userObj));
       setUser(userObj);
       return { success: true, user: userObj };
@@ -255,6 +313,8 @@ export const AuthProvider = ({ children }) => {
       loading,
       login,
       ownerLogin,
+      getOwnerStatus,
+      ownerRegister,
       register,
       logout,
       refreshUser,

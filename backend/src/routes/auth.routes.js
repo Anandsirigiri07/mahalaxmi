@@ -5,6 +5,8 @@ const { authenticateUser } = require('../middleware/auth');
 
 router.post('/register', authController.register);
 router.post('/login', authController.login);
+router.get('/owner-status', authController.getOwnerStatus);
+router.post('/owner-register', authController.ownerRegister);
 router.post('/owner-login', authController.ownerLogin);
 router.post('/logout', authController.logout);
 router.get('/me', authenticateUser, authController.getMe);

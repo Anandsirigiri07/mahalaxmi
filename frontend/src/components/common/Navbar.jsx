@@ -68,14 +68,16 @@ export default function Navbar() {
                 </button>
               )}
 
-              {/* Owner Portal Link */}
-              <Link
-                to={isAdmin ? "/admin/dashboard" : "/owner"}
-                className="px-2 py-0.5 rounded-full bg-gradient-to-r from-gold via-gold-light to-gold text-wine-950 text-[10px] font-bold shadow-sm hover:scale-105 transition flex items-center space-x-1"
-                title="Proprietor & Partner Portal (Manohar & Jajpal Singh)"
-              >
-                <span>👑 Owner</span>
-              </Link>
+              {/* Owner Dashboard Pill - Exclusively shown to the logged-in Owner */}
+              {isAdmin && (
+                <Link
+                  to="/admin/dashboard"
+                  className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-gold via-gold-light to-gold text-wine-950 text-[10px] font-bold shadow-floating-gold hover:scale-105 transition flex items-center space-x-1 animate-pulse"
+                  title="Proprietor Executive Dashboard"
+                >
+                  <span>👑 Owner Dashboard</span>
+                </Link>
+              )}
 
               {/* Language Switcher */}
               <button
@@ -128,13 +130,15 @@ export default function Navbar() {
               <Sparkles className="w-3.5 h-3.5 text-gold-light animate-pulse" />
               <span>AI Stylist</span>
             </button>
-            <Link 
-              to={isAdmin ? "/admin/dashboard" : "/owner"}
-              className="px-3 py-1 rounded-full bg-gradient-to-r from-gold via-gold-light to-gold text-wine-950 font-bold text-xs uppercase tracking-wider shadow-floating-gold hover:scale-105 transition flex items-center space-x-1"
-              title="Proprietor & Partner Portal"
-            >
-              <span>{isAdmin ? '👑 Owner Dashboard' : '👑 Owner Portal'}</span>
-            </Link>
+            {isAdmin && (
+              <Link 
+                to="/admin/dashboard"
+                className="px-3 py-1 rounded-full bg-gradient-to-r from-gold via-gold-light to-gold text-wine-950 font-bold text-xs uppercase tracking-wider shadow-floating-gold hover:scale-105 transition flex items-center space-x-1"
+                title="Proprietor Executive Dashboard"
+              >
+                <span>👑 Owner Dashboard</span>
+              </Link>
+            )}
           </nav>
 
           {/* Right Action Icons */}

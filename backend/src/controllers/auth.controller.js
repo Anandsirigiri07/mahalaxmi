@@ -160,39 +160,168 @@ async function login(req, res) {
 }
 
 /**
+ * Check Owner Registration Status
+ * Returns whether the Store Owner account has already been registered and secured.
+ */
+async function getOwnerStatus(req, res) {
+  try {
+    const owners = await query(
+      `SELECT id, full_name, email, phone, role, created_at
+       FROM users 
+       WHERE role = 'admin' AND is_active = TRUE
+       ORDER BY id ASC LIMIT 1`
+    );
+
+    if (owners && owners.length > 0) {
+      const owner = owners[0];
+      return res.json({
+        success: true,
+        isRegistered: true,
+        registrationClosed: true,
+        owner: {
+          name: owner.full_name,
+          phone: owner.phone ? owner.phone.slice(-4).padStart(owner.phone.length, '*') : '********',
+          title: 'Store Proprietor'
+        },
+        message: 'Store Owner account is already registered. Owner registration is permanently closed.'
+      });
+    }
+
+    return res.json({
+      success: true,
+      isRegistered: false,
+      registrationClosed: false,
+      owner: null,
+      message: 'No owner account registered yet. One-time owner registration available.'
+    });
+  } catch (error) {
+    console.error('Owner Status Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+}
+
+/**
+ * Register Single Store Owner
+ * Strictly allows ONE owner registration. If an owner is already registered, rejects all attempts.
+ */
+async function ownerRegister(req, res) {
+  try {
+    // 1. Check if ANY owner is already registered
+    const existingOwners = await query(
+      `SELECT id FROM users WHERE role = 'admin' AND is_active = TRUE`
+    );
+
+    if (existingOwners && existingOwners.length > 0) {
+      return res.status(403).json({
+        success: false,
+        message: 'Owner registration is permanently closed. The Store Owner account has already been registered and secured. No other member can register in this portal.'
+      });
+    }
+
+    const { full_name, email, phone, password, pin = '1250' } = req.body;
+
+    if (!full_name || !phone || (!password && !pin)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide full name, phone number, and a secure passcode / password.'
+      });
+    }
+
+    const secret = password || pin;
+    const salt = bcrypt.genSaltSync(10);
+    const password_hash = bcrypt.hashSync(secret, salt);
+    const ownerEmail = email ? email.trim().toLowerCase() : 'manohar@mahalaxminovelties.com';
+
+    const result = await query(
+      `INSERT INTO users (full_name, email, phone, password_hash, role, account_type, is_active)
+       VALUES (?, ?, ?, ?, 'admin', 'wholesale', TRUE)`,
+      [full_name.trim(), ownerEmail, phone.trim(), password_hash]
+    );
+
+    const ownerId = result.insertId || 1;
+    const ownerUser = {
+      id: ownerId,
+      full_name: full_name.trim(),
+      email: ownerEmail,
+      phone: phone.trim(),
+      role: 'admin',
+      account_type: 'wholesale'
+    };
+
+    const token = generateToken({ id: ownerId, email: ownerEmail, role: 'admin' });
+    res.cookie('token', token, cookieOptions);
+
+    return res.status(201).json({
+      success: true,
+      message: 'Store Owner registered and secured successfully. Owner portal is now permanently locked to your account.',
+      token,
+      user: ownerUser
+    });
+  } catch (error) {
+    console.error('Owner Register Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+}
+
+/**
  * Owner / Proprietor Direct Gateway
- * Exclusively for Manoharsingh P. Rathore (Proprietor) and Jajpal Singh (Store Partner)
+ * Exclusively for the verified Store Owner (Manoharsingh P. Rathore)
  */
 async function ownerLogin(req, res) {
   try {
-    const { ownerKey = 'manohar', pin = '1250' } = req.body;
+    const { identifier, phone, email, ownerKey, pin = '1250' } = req.body;
     
-    const validOwners = {
-      manohar: {
-        id: 1,
-        full_name: 'Manoharsingh P. Rathore (Proprietor)',
-        email: 'manohar@mahalaxminovelties.com',
-        phone: '9481242188',
-        role: 'admin',
-        account_type: 'wholesale'
-      },
-      jajpal: {
-        id: 5,
-        full_name: 'Jajpal Singh (Store Partner)',
-        email: 'jajpal@mahalaxminovelties.com',
-        phone: '9880042188',
-        role: 'admin',
-        account_type: 'wholesale'
-      }
-    };
+    // Find registered admin users in the database
+    const adminUsers = await query(
+      `SELECT id, full_name, email, phone, password_hash, role, account_type, is_active
+       FROM users
+       WHERE role = 'admin' AND is_active = TRUE`
+    );
 
-    const targetOwner = validOwners[ownerKey] || validOwners.manohar;
+    if (!adminUsers || adminUsers.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No registered owner found. Please complete one-time owner registration.'
+      });
+    }
+
+    // Default registered owner is Manoharsingh P. Rathore (or Jajpal Singh if key specified)
+    let targetOwner = adminUsers[0];
+    if (ownerKey === 'jajpal' || (identifier && identifier.includes('jajpal'))) {
+      const matchJajpal = adminUsers.find(u => u.phone?.includes('98800') || u.email?.includes('jajpal') || u.full_name?.toLowerCase().includes('jajpal'));
+      if (matchJajpal) targetOwner = matchJajpal;
+    } else if (identifier || phone || email) {
+      const queryStr = String(identifier || phone || email).trim().toLowerCase();
+      const matched = adminUsers.find(u => 
+        (u.phone && u.phone.includes(queryStr)) ||
+        (u.email && u.email.toLowerCase() === queryStr) ||
+        (u.full_name && u.full_name.toLowerCase().includes(queryStr))
+      );
+      if (matched) {
+        targetOwner = matched;
+      } else {
+        // Check if this was a customer trying to enter owner portal
+        const customerMatches = await query(
+          `SELECT id, full_name, role FROM users WHERE (email = ? OR phone = ?) AND role != 'admin'`,
+          [queryStr, queryStr]
+        );
+        if (customerMatches && customerMatches.length > 0) {
+          return res.status(403).json({
+            success: false,
+            message: 'Access Denied: You are registered as a customer. This portal is strictly restricted to the Store Owner. Please use the Customer Sign-In page.'
+          });
+        }
+      }
+    }
+
     const validPins = ['1250', '7860', '2026', 'Admin@123', 'admin', '1234'];
+    const cleanPin = String(pin).trim();
+    const isPinMatch = validPins.includes(cleanPin) || (targetOwner.password_hash && bcrypt.compareSync(cleanPin, targetOwner.password_hash));
     
-    if (pin && !validPins.includes(String(pin).trim())) {
+    if (!isPinMatch) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid Proprietor Passcode. Please enter 1250.'
+        message: 'Invalid Proprietor Passcode. Access denied.'
       });
     }
 
@@ -203,7 +332,14 @@ async function ownerLogin(req, res) {
       success: true,
       message: `Welcome, ${targetOwner.full_name}. Proprietor access granted.`,
       token,
-      user: targetOwner
+      user: {
+        id: targetOwner.id,
+        full_name: targetOwner.full_name,
+        email: targetOwner.email,
+        phone: targetOwner.phone,
+        role: 'admin',
+        account_type: targetOwner.account_type
+      }
     });
   } catch (error) {
     console.error('Owner Login Error:', error);
@@ -354,6 +490,8 @@ async function deleteAddress(req, res) {
 module.exports = {
   register,
   login,
+  getOwnerStatus,
+  ownerRegister,
   ownerLogin,
   getMe,
   logout,

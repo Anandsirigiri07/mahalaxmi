@@ -132,9 +132,9 @@ export default function AiStylistModal({ isOpen, onClose }) {
                           </div>
                         </div>
                         <Link
-                          to="/catalogue"
+                          to={p.id ? `/product/${p.id}` : (p.category ? `/catalogue?category=${p.category}` : '/catalogue')}
                           onClick={onClose}
-                          className="px-2.5 py-1 rounded-lg bg-gold text-wine-950 text-[10px] font-bold hover:bg-gold-light transition"
+                          className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-gold via-gold-light to-gold text-wine-950 text-[10px] font-bold hover:scale-105 shadow-sm transition"
                         >
                           View
                         </Link>

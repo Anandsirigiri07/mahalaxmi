@@ -3,12 +3,73 @@ const { query, getConnection } = require('../config/db');
 const { generateToken, cookieOptions } = require('../config/jwt');
 
 /**
+ * Merge any guest session cart items into the logged-in user's cart
+ */
+async function mergeGuestCart(userId, sessionId) {
+  if (!userId || !sessionId || sessionId === 'guest') return;
+  try {
+    const guestCarts = await query(
+      `SELECT id FROM carts WHERE session_id = ? AND user_id IS NULL LIMIT 1`,
+      [sessionId]
+    );
+    if (!guestCarts || guestCarts.length === 0) return;
+    const guestCartId = guestCarts[0].id;
+    const guestItems = await query(`SELECT * FROM cart_items WHERE cart_id = ?`, [guestCartId]);
+    if (!guestItems || guestItems.length === 0) return;
+
+    const userCarts = await query(`SELECT id FROM carts WHERE user_id = ? LIMIT 1`, [userId]);
+    let userCartId;
+    if (userCarts && userCarts.length > 0) {
+      userCartId = userCarts[0].id;
+    } else {
+      const created = await query(
+        `INSERT INTO carts (user_id, session_id, cart_type) VALUES (?, ?, 'retail')`,
+        [userId, sessionId]
+      );
+      userCartId = created.insertId;
+    }
+
+    for (const gi of guestItems) {
+      const existing = await query(
+        `SELECT id, quantity FROM cart_items WHERE cart_id = ? AND product_id = ?`,
+        [userCartId, gi.product_id]
+      );
+      if (existing && existing.length > 0) {
+        await query(`UPDATE cart_items SET quantity = ? WHERE id = ?`, [
+          existing[0].quantity + gi.quantity,
+          existing[0].id
+        ]);
+      } else {
+        await query(
+          `INSERT INTO cart_items (cart_id, product_id, quantity, unit_price, is_wholesale_pricing)
+           VALUES (?, ?, ?, ?, ?)`,
+          [userCartId, gi.product_id, gi.quantity, gi.unit_price, gi.is_wholesale_pricing ? 1 : 0]
+        );
+      }
+      await query(`DELETE FROM cart_items WHERE id = ?`, [gi.id]);
+    }
+  } catch (err) {
+    console.warn('Guest cart merge notice:', err.message);
+  }
+}
+
+/**
  * Register a new user (Retail or Wholesale)
  */
 async function register(req, res) {
   const conn = await getConnection();
   try {
-    const { full_name, email, phone, password, account_type, shop_name, gst_number } = req.body;
+    const {
+      full_name,
+      email,
+      phone,
+      password,
+      account_type,
+      shop_name,
+      business_name,
+      gst_number,
+      gstin
+    } = req.body;
 
     if (!full_name || !email || !phone || !password) {
       return res.status(400).json({
@@ -17,8 +78,23 @@ async function register(req, res) {
       });
     }
 
+    const normalizedEmail = String(email).trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid email address.'
+      });
+    }
+
+    if (String(password).length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 6 characters long.'
+      });
+    }
+
     // Check existing email
-    const existing = await query('SELECT id FROM users WHERE email = ?', [email.trim().toLowerCase()]);
+    const existing = await query('SELECT id FROM users WHERE email = ?', [normalizedEmail]);
     if (existing.length > 0) {
       return res.status(409).json({
         success: false,
@@ -29,13 +105,15 @@ async function register(req, res) {
     const salt = bcrypt.genSaltSync(10);
     const password_hash = bcrypt.hashSync(password, salt);
     const resolvedAccountType = account_type === 'wholesale' ? 'wholesale' : 'retail';
+    const resolvedShopName = (shop_name || business_name || '').trim() || null;
+    const resolvedGstNumber = (gst_number || gstin || '').trim() || null;
 
     await conn.beginTransaction();
 
     const [userResult] = await conn.execute(
       `INSERT INTO users (full_name, email, phone, password_hash, role, account_type, is_active)
        VALUES (?, ?, ?, ?, 'customer', ?, TRUE)`,
-      [full_name.trim(), email.trim().toLowerCase(), phone.trim(), password_hash, resolvedAccountType]
+      [full_name.trim(), normalizedEmail, String(phone).trim(), password_hash, resolvedAccountType]
     );
 
     const userId = userResult.insertId;
@@ -44,14 +122,15 @@ async function register(req, res) {
       await conn.execute(
         `INSERT INTO customer_profiles (user_id, shop_name, gst_number, verification_status)
          VALUES (?, ?, ?, 'pending')`,
-        [userId, shop_name ? shop_name.trim() : null, gst_number ? gst_number.trim() : null]
+        [userId, resolvedShopName, resolvedGstNumber]
       );
     }
 
     await conn.commit();
 
-    const token = generateToken({ id: userId, email: email.trim().toLowerCase(), role: 'customer' });
+    await mergeGuestCart(userId, req.headers['x-session-id']);
 
+    const token = generateToken({ id: userId, email: normalizedEmail, role: 'customer' });
     res.cookie('token', token, cookieOptions);
 
     return res.status(201).json({
@@ -63,11 +142,12 @@ async function register(req, res) {
       user: {
         id: userId,
         full_name: full_name.trim(),
-        email: email.trim().toLowerCase(),
-        phone: phone.trim(),
+        email: normalizedEmail,
+        phone: String(phone).trim(),
         role: 'customer',
         account_type: resolvedAccountType,
-        shop_name: shop_name || null,
+        shop_name: resolvedShopName,
+        gst_number: resolvedGstNumber,
         verification_status: resolvedAccountType === 'wholesale' ? 'pending' : null
       }
     });
@@ -103,7 +183,7 @@ async function login(req, res) {
        FROM users u
        LEFT JOIN customer_profiles cp ON u.id = cp.user_id
        WHERE u.email = ?`,
-      [email.trim().toLowerCase()]
+      [String(email).trim().toLowerCase()]
     );
 
     if (users.length === 0) {
@@ -122,7 +202,7 @@ async function login(req, res) {
       });
     }
 
-    const isMatch = bcrypt.compareSync(password, user.password_hash) || password === '1250' || password === 'Admin@123';
+    const isMatch = Boolean(user.password_hash) && bcrypt.compareSync(String(password), user.password_hash);
     if (!isMatch) {
       return res.status(401).json({
         success: false,
@@ -130,8 +210,9 @@ async function login(req, res) {
       });
     }
 
-    const token = generateToken({ id: user.id, email: user.email, role: user.role });
+    await mergeGuestCart(user.id, req.headers['x-session-id']);
 
+    const token = generateToken({ id: user.id, email: user.email, role: user.role });
     res.cookie('token', token, cookieOptions);
 
     return res.json({
@@ -161,7 +242,6 @@ async function login(req, res) {
 
 /**
  * Check Owner Registration Status
- * Returns whether the Store Owner account has already been registered and secured.
  */
 async function getOwnerStatus(req, res) {
   try {
@@ -201,12 +281,10 @@ async function getOwnerStatus(req, res) {
 }
 
 /**
- * Register Single Store Owner
- * Strictly allows ONE owner registration. If an owner is already registered, rejects all attempts.
+ * Register Single Store Owner (only allowed if zero admins exist)
  */
 async function ownerRegister(req, res) {
   try {
-    // 1. Check if ANY owner is already registered
     const existingOwners = await query(
       `SELECT id FROM users WHERE role = 'admin' AND is_active = TRUE`
     );
@@ -214,36 +292,36 @@ async function ownerRegister(req, res) {
     if (existingOwners && existingOwners.length > 0) {
       return res.status(403).json({
         success: false,
-        message: 'Owner registration is permanently closed. The Store Owner account has already been registered and secured. No other member can register in this portal.'
+        message: 'Owner registration is permanently closed. The Store Owner account has already been registered and secured.'
       });
     }
 
-    const { full_name, email, phone, password, pin = '1250' } = req.body;
+    const { full_name, email, phone, password, pin } = req.body;
+    const secret = password || pin;
 
-    if (!full_name || !phone || (!password && !pin)) {
+    if (!full_name || !phone || !secret || String(secret).length < 6) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide full name, phone number, and a secure passcode / password.'
+        message: 'Please provide full name, phone number, and a password of at least 6 characters.'
       });
     }
 
-    const secret = password || pin;
     const salt = bcrypt.genSaltSync(10);
-    const password_hash = bcrypt.hashSync(secret, salt);
+    const password_hash = bcrypt.hashSync(String(secret), salt);
     const ownerEmail = email ? email.trim().toLowerCase() : 'manohar@mahalaxminovelties.com';
 
     const result = await query(
       `INSERT INTO users (full_name, email, phone, password_hash, role, account_type, is_active)
        VALUES (?, ?, ?, ?, 'admin', 'wholesale', TRUE)`,
-      [full_name.trim(), ownerEmail, phone.trim(), password_hash]
+      [full_name.trim(), ownerEmail, String(phone).trim(), password_hash]
     );
 
-    const ownerId = result.insertId || 1;
+    const ownerId = result.insertId;
     const ownerUser = {
       id: ownerId,
       full_name: full_name.trim(),
       email: ownerEmail,
-      phone: phone.trim(),
+      phone: String(phone).trim(),
       role: 'admin',
       account_type: 'wholesale'
     };
@@ -253,7 +331,7 @@ async function ownerRegister(req, res) {
 
     return res.status(201).json({
       success: true,
-      message: 'Store Owner registered and secured successfully. Owner portal is now permanently locked to your account.',
+      message: 'Store Owner registered and secured successfully.',
       token,
       user: ownerUser
     });
@@ -265,7 +343,6 @@ async function ownerRegister(req, res) {
 
 /**
  * Owner / Proprietor Direct Gateway
- * Exclusively for the verified Store Owner (Manoharsingh P. Rathore)
  */
 async function ownerLogin(req, res) {
   try {
@@ -276,12 +353,11 @@ async function ownerLogin(req, res) {
     if (!cleanId || !cleanSecret) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide both your registered Owner Email/Phone and secret passcode.'
+        message: 'Please provide both your registered Owner Email/Phone and password.'
       });
     }
 
-    // Find registered admin users in the database
-    const adminUsers = await query("SELECT * FROM users WHERE role = 'admin'");
+    const adminUsers = await query("SELECT * FROM users WHERE role = 'admin' AND is_active = TRUE");
     const customerUsers = await query("SELECT * FROM users WHERE role = 'customer'");
 
     if (!adminUsers || adminUsers.length === 0) {
@@ -292,10 +368,10 @@ async function ownerLogin(req, res) {
     }
 
     const queryStr = cleanId.toLowerCase();
+    const cleanDigits = cleanId.replace(/\D/g, '');
 
-    // Check if this was a customer trying to enter owner portal
-    const isCustomer = customerUsers.some(c => 
-      (c.phone && c.phone === cleanId) || 
+    const isCustomer = customerUsers.some(c =>
+      (c.phone && (c.phone === cleanId || (cleanDigits.length >= 10 && cleanDigits.endsWith(c.phone)))) ||
       (c.email && c.email.toLowerCase() === queryStr)
     );
     if (isCustomer) {
@@ -305,9 +381,10 @@ async function ownerLogin(req, res) {
       });
     }
 
-    const matched = adminUsers.find(u => 
-      (u.phone && (u.phone === cleanId || cleanId.includes(u.phone))) ||
-      (u.email && u.email.toLowerCase() === queryStr)
+    const matched = adminUsers.find(u =>
+      (u.phone && (u.phone === cleanId || (cleanDigits.length >= 10 && cleanDigits.endsWith(u.phone)))) ||
+      (u.email && u.email.toLowerCase() === queryStr) ||
+      (u.id === 1 && queryStr === 'admin@mahalaxminovelties.com')
     );
 
     if (!matched) {
@@ -317,31 +394,28 @@ async function ownerLogin(req, res) {
       });
     }
 
-    const targetOwner = matched;
-    const validPins = ['1250', '7860', '2026', 'Admin@123'];
-    const isPinMatch = validPins.includes(cleanSecret) || (targetOwner.password_hash && bcrypt.compareSync(cleanSecret, targetOwner.password_hash));
-    
-    if (!isPinMatch) {
+    const isSecretMatch = Boolean(matched.password_hash) && bcrypt.compareSync(cleanSecret, matched.password_hash);
+    if (!isSecretMatch) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid Owner Passcode. Access denied.'
+        message: 'Invalid Owner Password. Access denied.'
       });
     }
 
-    const token = generateToken({ id: targetOwner.id, email: targetOwner.email, role: 'admin' });
+    const token = generateToken({ id: matched.id, email: matched.email, role: 'admin' });
     res.cookie('token', token, cookieOptions);
 
     return res.json({
       success: true,
-      message: `Welcome, ${targetOwner.full_name}. Proprietor access granted.`,
+      message: `Welcome, ${matched.full_name}. Proprietor access granted.`,
       token,
       user: {
-        id: targetOwner.id,
-        full_name: targetOwner.full_name,
-        email: targetOwner.email,
-        phone: targetOwner.phone,
+        id: matched.id,
+        full_name: matched.full_name,
+        email: matched.email,
+        phone: matched.phone,
         role: 'admin',
-        account_type: targetOwner.account_type
+        account_type: matched.account_type
       }
     });
   } catch (error) {
@@ -392,26 +466,38 @@ function logout(req, res) {
  */
 async function updateProfile(req, res) {
   try {
-    const { full_name, phone, shop_name, gst_number } = req.body;
+    const { full_name, phone, shop_name, business_name, gst_number, gstin } = req.body;
     const userId = req.user.id;
 
     await query(
       `UPDATE users SET full_name = COALESCE(?, full_name), phone = COALESCE(?, phone) WHERE id = ?`,
-      [full_name, phone, userId]
+      [full_name ? full_name.trim() : null, phone ? String(phone).trim() : null, userId]
     );
 
     if (req.user.account_type === 'wholesale') {
+      const resolvedShop = shop_name !== undefined ? shop_name : business_name;
+      const resolvedGst = gst_number !== undefined ? gst_number : gstin;
       await query(
         `INSERT INTO customer_profiles (user_id, shop_name, gst_number)
          VALUES (?, ?, ?)
          ON DUPLICATE KEY UPDATE shop_name = VALUES(shop_name), gst_number = VALUES(gst_number)`,
-        [userId, shop_name, gst_number]
+        [userId, resolvedShop ?? null, resolvedGst ?? null]
       );
     }
 
+    const updatedUsers = await query(
+      `SELECT u.id, u.full_name, u.email, u.phone, u.role, u.account_type, u.is_active,
+              cp.shop_name, cp.gst_number, cp.verification_status
+       FROM users u
+       LEFT JOIN customer_profiles cp ON u.id = cp.user_id
+       WHERE u.id = ?`,
+      [userId]
+    );
+
     return res.json({
       success: true,
-      message: 'Profile updated successfully.'
+      message: 'Profile updated successfully.',
+      user: updatedUsers[0] || req.user
     });
   } catch (error) {
     console.error('Update Profile Error:', error);
@@ -423,7 +509,7 @@ async function updateProfile(req, res) {
 }
 
 /**
- * Add / Update / Delete Saved Addresses
+ * Saved Addresses CRUD
  */
 async function getAddresses(req, res) {
   try {
@@ -452,20 +538,20 @@ async function addAddress(req, res) {
       await query(`UPDATE addresses SET is_default = FALSE WHERE user_id = ?`, [req.user.id]);
     }
 
-    const [result] = await query(
+    const result = await query(
       `INSERT INTO addresses (user_id, label, recipient_name, phone, address_line1, address_line2, landmark, city, state, pin_code, is_default)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         req.user.id,
         label || 'Shop',
-        recipient_name,
-        phone,
-        address_line1,
-        address_line2 || null,
-        landmark || null,
+        recipient_name.trim(),
+        String(phone).trim(),
+        address_line1.trim(),
+        address_line2 ? address_line2.trim() : null,
+        landmark ? landmark.trim() : null,
         city || 'Kalaburagi',
         state || 'Karnataka',
-        pin_code,
+        String(pin_code).trim(),
         is_default ? 1 : 0
       ]
     );
@@ -483,7 +569,10 @@ async function addAddress(req, res) {
 async function deleteAddress(req, res) {
   try {
     const addressId = req.params.id;
-    await query(`DELETE FROM addresses WHERE id = ? AND user_id = ?`, [addressId, req.user.id]);
+    const result = await query(`DELETE FROM addresses WHERE id = ? AND user_id = ?`, [addressId, req.user.id]);
+    if (!result || result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Address not found.' });
+    }
     return res.json({ success: true, message: 'Address removed successfully.' });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });

@@ -17,7 +17,7 @@ VALUES (
     'Manoharsingh P. Rathore (Admin)',
     'admin@mahalaxminovelties.com',
     '9481242188',
-    '$2a$10$yeXwzMiGY3S2Ogk3q.iZYuSzgNZck6BapXVmcwySvUYieF.8Q/vC.',
+    '$2a$10$NJvZG2YOEzFe/EHfiWgfR.A0nG7IaONF1FO1h4V4VkdlRpHaxOAv6',
     'admin',
     'wholesale',
     TRUE

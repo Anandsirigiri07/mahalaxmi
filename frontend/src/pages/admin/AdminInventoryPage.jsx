@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Boxes, 
-  Search, 
-  History, 
-  Plus, 
-  Minus, 
-  AlertTriangle, 
-  CheckCircle, 
-  XCircle, 
-  X,
-  FileText
+import {
+  Boxes,
+  Search,
+  History,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  X
 } from 'lucide-react';
 import api from '../../services/api';
 
@@ -22,7 +19,7 @@ export default function AdminInventoryPage() {
 
   // Stock Adjustment Modal
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [adjustAction, setAdjustAction] = useState('add'); // 'add', 'deduct', 'set'
+  const [adjustAction, setAdjustAction] = useState('add');
   const [adjustQty, setAdjustQty] = useState(10);
   const [thresholdInput, setThresholdInput] = useState(5);
   const [adjustReason, setAdjustReason] = useState('');
@@ -33,12 +30,13 @@ export default function AdminInventoryPage() {
   const [auditLogs, setAuditLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
 
-  const fetchInventory = async () => {
+  const fetchInventory = async (overrideSearch) => {
     try {
       setLoading(true);
       const params = {};
       if (statusFilter) params.status = statusFilter;
-      if (searchTerm) params.search = searchTerm;
+      const q = overrideSearch !== undefined ? overrideSearch : searchTerm;
+      if (q) params.search = q;
 
       const res = await api.get('/inventory', { params });
       if (res.data.success) {
@@ -60,6 +58,7 @@ export default function AdminInventoryPage() {
 
   const handleOpenAdjust = (item) => {
     setSelectedProduct(item);
+    setAdjustAction('add');
     setAdjustQty(10);
     setThresholdInput(item.low_stock_threshold || 5);
     setAdjustReason('');
@@ -112,10 +111,10 @@ export default function AdminInventoryPage() {
         <div>
           <h2 className="text-xl font-bold font-serif-luxury text-stone-900 flex items-center gap-2">
             <Boxes className="w-5 h-5 text-emerald-600" />
-            <span>Hybrid Inventory & Stock Control</span>
+            <span>Hybrid Inventory &amp; Stock Control</span>
           </h2>
           <p className="text-xs text-stone-500 mt-0.5">
-            Automatic order stock reservation & deduction with manual audit overrides
+            Automatic order stock reservation &amp; deduction with manual audit overrides
           </p>
         </div>
 
@@ -157,24 +156,34 @@ export default function AdminInventoryPage() {
 
       {/* Filter and Search */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="relative w-full sm:w-80">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && fetchInventory()}
-            placeholder="Search SKU or name..."
-            className="w-full pl-9 pr-4 py-2 rounded-xl border border-stone-300 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600"
-          />
-          <Search className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
-        </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            fetchInventory();
+          }}
+          className="relative w-full sm:w-96 flex gap-2"
+        >
+          <div className="relative flex-1">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search SKU or name..."
+              className="w-full pl-9 pr-4 py-2 rounded-xl border border-stone-300 text-xs sm:text-sm bg-white text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+            />
+            <Search className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
+          </div>
+          <button type="submit" className="px-4 py-2 rounded-xl bg-emerald-900 text-emerald-200 text-xs font-bold">
+            Search
+          </button>
+        </form>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-stone-600">Status:</span>
+          <span className="text-xs font-semibold text-stone-300">Status:</span>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="py-1.5 px-3 rounded-xl border border-stone-300 text-xs font-bold text-stone-700 bg-white"
+            className="py-1.5 px-3 rounded-xl border border-stone-300 text-xs font-bold text-stone-800 bg-white"
           >
             <option value="">All Stock Levels</option>
             <option value="in_stock">In Stock Only</option>
@@ -210,17 +219,15 @@ export default function AdminInventoryPage() {
                     <td className="py-3 px-4 font-mono font-bold text-purple-950">{item.sku}</td>
                     <td className="py-3 px-4 font-bold text-stone-700">{item.physical_stock}</td>
                     <td className="py-3 px-4 font-bold text-amber-700">{item.reserved_stock}</td>
-                    <td className="py-3 px-4 font-black text-sm text-emerald-800">
-                      {item.available_stock}
-                    </td>
+                    <td className="py-3 px-4 font-black text-sm text-emerald-800">{item.available_stock}</td>
                     <td className="py-3 px-4 text-stone-500 font-medium">≤ {item.low_stock_threshold}</td>
                     <td className="py-3 px-4">
                       <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
                         item.stock_status === 'out_of_stock'
                           ? 'bg-red-100 text-red-700'
                           : item.stock_status === 'low_stock'
-                          ? 'bg-amber-100 text-amber-800'
-                          : 'bg-emerald-100 text-emerald-800'
+                            ? 'bg-amber-100 text-amber-800'
+                            : 'bg-emerald-100 text-emerald-800'
                       }`}>
                         {item.stock_status.replace('_', ' ').toUpperCase()}
                       </span>
@@ -228,7 +235,7 @@ export default function AdminInventoryPage() {
                     <td className="py-3 px-4 text-right">
                       <button
                         onClick={() => handleOpenAdjust(item)}
-                        className="px-3 py-1 bg-emerald-850 hover:bg-emerald-900 text-mint-400 rounded-lg text-xs font-bold transition shadow-sm"
+                        className="px-3 py-1 bg-emerald-900 hover:bg-emerald-950 text-emerald-300 rounded-lg text-xs font-bold transition shadow-sm"
                       >
                         Adjust Stock
                       </button>
@@ -240,7 +247,7 @@ export default function AdminInventoryPage() {
           </div>
         ) : (
           <div className="p-12 text-center text-xs text-stone-500">
-            No products in inventory yet. Upload your first product from Products & Pricing.
+            No products in inventory yet. Upload your first product from Products &amp; Pricing.
           </div>
         )}
       </div>
@@ -248,7 +255,7 @@ export default function AdminInventoryPage() {
       {/* Adjust Stock Modal */}
       {selectedProduct && (
         <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+          <div className="bg-white text-stone-900 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-stone-200 pb-3">
               <h3 className="font-serif-luxury font-bold text-base text-purple-950">
                 Adjust Stock: {selectedProduct.name_en}
@@ -258,7 +265,7 @@ export default function AdminInventoryPage() {
               </button>
             </div>
 
-            <div className="bg-stone-50 p-3 rounded-xl text-xs space-y-1">
+            <div className="bg-stone-50 p-3 rounded-xl text-xs space-y-1 text-stone-800">
               <p>SKU: <strong>{selectedProduct.sku}</strong></p>
               <p>Current Physical Stock: <strong>{selectedProduct.physical_stock}</strong></p>
               <p>Current Reserved in Active Orders: <strong>{selectedProduct.reserved_stock}</strong></p>
@@ -272,7 +279,7 @@ export default function AdminInventoryPage() {
                     type="button"
                     onClick={() => setAdjustAction('add')}
                     className={`py-1.5 rounded-lg font-bold border transition ${
-                      adjustAction === 'add' ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-stone-50 border-stone-300'
+                      adjustAction === 'add' ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-stone-50 text-stone-800 border-stone-300'
                     }`}
                   >
                     + Add Stock
@@ -281,7 +288,7 @@ export default function AdminInventoryPage() {
                     type="button"
                     onClick={() => setAdjustAction('deduct')}
                     className={`py-1.5 rounded-lg font-bold border transition ${
-                      adjustAction === 'deduct' ? 'bg-red-700 text-white border-red-700' : 'bg-stone-50 border-stone-300'
+                      adjustAction === 'deduct' ? 'bg-red-700 text-white border-red-700' : 'bg-stone-50 text-stone-800 border-stone-300'
                     }`}
                   >
                     - Deduct Stock
@@ -290,7 +297,7 @@ export default function AdminInventoryPage() {
                     type="button"
                     onClick={() => setAdjustAction('set')}
                     className={`py-1.5 rounded-lg font-bold border transition ${
-                      adjustAction === 'set' ? 'bg-purple-900 text-white border-purple-900' : 'bg-stone-50 border-stone-300'
+                      adjustAction === 'set' ? 'bg-purple-900 text-white border-purple-900' : 'bg-stone-50 text-stone-800 border-stone-300'
                     }`}
                   >
                     Set Exact
@@ -302,11 +309,11 @@ export default function AdminInventoryPage() {
                 <label className="block font-bold text-stone-700 mb-1">Quantity</label>
                 <input
                   type="number"
-                  min={1}
+                  min={adjustAction === 'set' ? 0 : 1}
                   required
                   value={adjustQty}
                   onChange={(e) => setAdjustQty(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-300 font-bold"
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 font-bold text-stone-900 bg-white"
                 />
               </div>
 
@@ -317,7 +324,7 @@ export default function AdminInventoryPage() {
                   min={1}
                   value={thresholdInput}
                   onChange={(e) => setThresholdInput(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-300 font-bold"
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 font-bold text-stone-900 bg-white"
                 />
               </div>
 
@@ -329,7 +336,7 @@ export default function AdminInventoryPage() {
                   value={adjustReason}
                   onChange={(e) => setAdjustReason(e.target.value)}
                   placeholder="e.g. Received new shipment from workshop"
-                  className="w-full px-3 py-2 rounded-xl border border-stone-300"
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 bg-white"
                 />
               </div>
 
@@ -344,7 +351,7 @@ export default function AdminInventoryPage() {
                 <button
                   type="submit"
                   disabled={savingAdjust}
-                  className="px-5 py-2 bg-emerald-850 hover:bg-emerald-900 text-mint-400 font-extrabold rounded-xl shadow"
+                  className="px-5 py-2 bg-emerald-900 hover:bg-emerald-950 text-emerald-300 font-extrabold rounded-xl shadow"
                 >
                   {savingAdjust ? 'Updating...' : 'Confirm Update'}
                 </button>
@@ -357,7 +364,7 @@ export default function AdminInventoryPage() {
       {/* Audit Logs Modal */}
       {showLogsModal && (
         <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-3xl w-full p-6 shadow-2xl space-y-4 my-8">
+          <div className="bg-white text-stone-900 rounded-3xl max-w-3xl w-full p-6 shadow-2xl space-y-4 my-8">
             <div className="flex items-center justify-between border-b border-stone-200 pb-3">
               <h3 className="font-serif-luxury font-bold text-base text-purple-950 flex items-center gap-2">
                 <History className="w-5 h-5 text-emerald-700" />

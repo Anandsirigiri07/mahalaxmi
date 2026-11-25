@@ -58,10 +58,10 @@ async function createCategory(req, res) {
       return res.status(400).json({ success: false, message: 'English name, Kannada name, and slug are required.' });
     }
 
-    const [result] = await query(
+    const result = await query(
       `INSERT INTO categories (name_en, name_kn, slug, description_en, description_kn, image_url, display_order)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [name_en, name_kn, slug, description_en || null, description_kn || null, image_url || null, display_order || 0]
+      [name_en.trim(), name_kn.trim(), slug.trim(), description_en || null, description_kn || null, image_url || null, display_order || 0]
     );
 
     return res.status(201).json({
@@ -90,7 +90,17 @@ async function updateCategory(req, res) {
            display_order = COALESCE(?, display_order),
            is_active = COALESCE(?, is_active)
        WHERE id = ?`,
-      [name_en, name_kn, slug, description_en, description_kn, image_url, display_order, is_active, id]
+      [
+        name_en ?? null,
+        name_kn ?? null,
+        slug ?? null,
+        description_en ?? null,
+        description_kn ?? null,
+        image_url ?? null,
+        display_order !== undefined ? parseInt(display_order, 10) : null,
+        is_active !== undefined ? (is_active ? 1 : 0) : null,
+        id
+      ]
     );
 
     return res.json({ success: true, message: 'Category updated successfully.' });
@@ -102,7 +112,6 @@ async function updateCategory(req, res) {
 async function deleteCategory(req, res) {
   try {
     const { id } = req.params;
-    // Check if category has products
     const [prodCheck] = await query(`SELECT COUNT(*) as cnt FROM products WHERE category_id = ?`, [id]);
     if (prodCheck && prodCheck.cnt > 0) {
       return res.status(400).json({

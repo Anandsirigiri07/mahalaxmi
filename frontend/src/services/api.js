@@ -8,7 +8,7 @@ if (!sessionId) {
 }
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -17,24 +17,30 @@ const api = axios.create({
 });
 
 // Attach JWT token to requests if available
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('mn_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-}, (error) => {
-  return Promise.reject(error);
-});
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('mn_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 // Intercept response errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Clear token if expired
+      const url = error.config?.url || '';
       const currentPath = window.location.pathname;
-      if (currentPath.startsWith('/account') || currentPath.startsWith('/admin')) {
+      if (
+        url.includes('/auth/me') ||
+        currentPath.startsWith('/account') ||
+        currentPath.startsWith('/admin') ||
+        currentPath.startsWith('/checkout')
+      ) {
         localStorage.removeItem('mn_token');
         localStorage.removeItem('mn_user');
       }

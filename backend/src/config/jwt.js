@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken');
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 require('dotenv').config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'mahalaxmi_super_secure_jwt_secret_kalaburagi_2026';

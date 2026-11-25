@@ -430,58 +430,111 @@ export default function ProductDetailPage() {
   const navigate = useNavigate();
   const { lang } = useLanguage();
   const { addToCart } = useCart();
-  const { user } = useAuth();
+  const { isWholesaleApproved, isAdmin } = useAuth();
 
-  const [product, setProduct] = useState(verifiedCatalog[id] || verifiedCatalog[1]);
-  const [selectedImage, setSelectedImage] = useState(product.primary_image);
-  const [buyMode, setBuyMode] = useState('wholesale');
+  const canBuyWholesale = isWholesaleApproved || isAdmin;
+  const fallbackProd = verifiedCatalog[id] || null;
+  const [product, setProduct] = useState(fallbackProd);
+  const [loading, setLoading] = useState(!fallbackProd);
+  const [selectedImage, setSelectedImage] = useState(fallbackProd?.primary_image || '');
+  const [buyMode, setBuyMode] = useState(canBuyWholesale ? 'wholesale' : 'retail');
   const [selectedFinish, setSelectedFinish] = useState(finishes[0]);
   const [selectedLength, setSelectedLength] = useState('30 Inch');
-  const [quantity, setQuantity] = useState(product.moq || 4);
+  const [quantity, setQuantity] = useState(canBuyWholesale ? (fallbackProd?.moq || 4) : 1);
   const [wishlisted, setWishlisted] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
   const [addedToast, setAddedToast] = useState(false);
+  const [addError, setAddError] = useState('');
+  const [showSizeGuide, setShowSizeGuide] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
+        setLoading(true);
         const res = await api.get(`/products/${id}`);
         if (res.data.success && res.data.product) {
           const p = res.data.product;
           setProduct(p);
-          setSelectedImage(p.primary_image || p.image_url || '/assets/products/chain-700.jpg');
-          setQuantity(p.moq || p.min_order_qty || 4);
-        } else if (verifiedCatalog[id]) {
-          setProduct(verifiedCatalog[id]);
-          setSelectedImage(verifiedCatalog[id].primary_image);
-          setQuantity(verifiedCatalog[id].moq);
+          const firstImg = p.primary_image || p.images?.[0]?.image_url || '/assets/products/kada-1250.jpg';
+          setSelectedImage(firstImg);
+          setQuantity(canBuyWholesale ? Math.max(p.moq || p.min_order_qty || 1, 1) : 1);
+          return;
         }
       } catch (err) {
         if (verifiedCatalog[id]) {
           setProduct(verifiedCatalog[id]);
           setSelectedImage(verifiedCatalog[id].primary_image);
-          setQuantity(verifiedCatalog[id].moq);
+          setQuantity(canBuyWholesale ? verifiedCatalog[id].moq : 1);
+        } else {
+          setProduct(null);
         }
+      } finally {
+        setLoading(false);
       }
     };
     fetchProduct();
-  }, [id]);
+  }, [id, canBuyWholesale]);
 
   useEffect(() => {
+    if (!product) return;
     if (buyMode === 'wholesale') {
-      setQuantity(Math.max(product.moq || 4, 1));
+      setQuantity(Math.max(product.moq || product.min_order_qty || 1, 1));
     } else {
       setQuantity(1);
     }
   }, [buyMode, product]);
 
+  if (loading && !product) {
+    return (
+      <div className="min-h-screen bg-[#280812] text-ivory flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-gold border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-[#280812] text-ivory flex flex-col items-center justify-center p-6 text-center space-y-4">
+        <h2 className="font-serif text-2xl font-bold text-gold-light">Jewellery Piece Not Found</h2>
+        <p className="text-xs text-ivory/70 max-w-sm">
+          This design may have been discontinued or removed from the showroom catalogue.
+        </p>
+        <Link
+          to="/catalogue"
+          className="px-6 py-3 rounded-xl bg-gradient-to-r from-gold via-gold-light to-gold text-wine-950 font-bold text-xs uppercase tracking-wider"
+        >
+          Back to Catalogue
+        </Link>
+      </div>
+    );
+  }
+
+  const availableStock = Number(product.available_stock ?? 0);
+  const isOutOfStock = product.stock_status === 'out_of_stock' || availableStock <= 0;
+  const moq = Number(product.moq || product.min_order_qty || 1);
+
+  const galleryImages = [];
+  if (product.images && product.images.length > 0) {
+    for (const im of product.images) {
+      if (im.image_url && !galleryImages.includes(im.image_url)) galleryImages.push(im.image_url);
+    }
+  }
+  if (product.primary_image && !galleryImages.includes(product.primary_image)) {
+    galleryImages.unshift(product.primary_image);
+  }
+  if (product.craft_image && !galleryImages.includes(product.craft_image)) {
+    galleryImages.push(product.craft_image);
+  }
+
   const adjustQty = (delta) => {
-    const step = buyMode === 'wholesale' ? 2 : 1;
-    const min = buyMode === 'wholesale' ? (product.moq || 4) : 1;
-    setQuantity(prev => Math.max(min, prev + delta * step));
+    const min = buyMode === 'wholesale' ? moq : 1;
+    const max = availableStock > 0 ? availableStock : 999;
+    setQuantity(prev => Math.min(max, Math.max(min, prev + delta)));
   };
 
   const handleAddToCart = async () => {
+    if (isOutOfStock) return;
+    setAddError('');
     setAddingToCart(true);
     const res = await addToCart(
       product,
@@ -495,6 +548,8 @@ export default function ProductDetailPage() {
     if (res.success) {
       setAddedToast(true);
       setTimeout(() => setAddedToast(false), 2200);
+    } else {
+      setAddError(res.message || 'Unable to add item to cart.');
     }
   };
 
@@ -553,35 +608,22 @@ export default function ProductDetailPage() {
             />
           </div>
 
-          {/* Studio View vs Artisan Craft Detail Switcher */}
-          <div className="flex items-center space-x-2 mt-3 z-10">
-            <button
-              type="button"
-              onClick={() => setSelectedImage(product.primary_image)}
-              className={`flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold transition active:scale-95 ${
-                selectedImage === product.primary_image
-                  ? 'bg-gold text-wine-950 font-bold shadow-[0_0_10px_#D4AF6A]'
-                  : 'bg-black/50 text-gold-light border border-gold/30 hover:border-gold'
-              }`}
-            >
-              <span>✨</span>
-              <span>Studio View</span>
-            </button>
-
-            {product.craft_image && (
+          {/* Gallery / Studio View Switcher */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-3 z-10">
+            {galleryImages.map((imgUrl, idx) => (
               <button
+                key={idx}
                 type="button"
-                onClick={() => setSelectedImage(product.craft_image)}
+                onClick={() => setSelectedImage(imgUrl)}
                 className={`flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold transition active:scale-95 ${
-                  selectedImage === product.craft_image
+                  selectedImage === imgUrl
                     ? 'bg-gold text-wine-950 font-bold shadow-[0_0_10px_#D4AF6A]'
                     : 'bg-black/50 text-gold-light border border-gold/30 hover:border-gold'
                 }`}
               >
-                <span>🔍</span>
-                <span>Artisan Macro</span>
+                <span>{idx === 0 ? '✨ Studio View' : idx === 1 ? '🔍 Artisan Macro' : `📷 View ${idx + 1}`}</span>
               </button>
-            )}
+            ))}
           </div>
         </div>
       </section>
@@ -595,9 +637,9 @@ export default function ProductDetailPage() {
             SKU: {product.sku}
           </span>
           <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-wine-900/80 border border-gold/30 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-gold shadow-[0_0_6px_#D4AF6A] animate-pulse"></span>
+            <span className={`w-2 h-2 rounded-full ${isOutOfStock ? 'bg-red-400' : 'bg-gold shadow-[0_0_6px_#D4AF6A] animate-pulse'}`}></span>
             <span className="text-xs font-semibold text-gold-light">
-              In Stock · {product.available_stock || 100} Pcs Ready to Dispatch
+              {isOutOfStock ? 'Out of Stock' : `In Stock · ${availableStock} Pcs Ready to Dispatch`}
             </span>
           </div>
         </div>
@@ -664,13 +706,20 @@ export default function ProductDetailPage() {
             <div className="flex items-center space-x-2 text-gold-light">
               <ShieldCheck className="w-4 h-4 text-gold" />
               <span className="font-medium">
-                {isWholesale ? 'Verified Wholesale Tier Applied' : 'Retail Single Piece Order Mode'}
+                {isWholesale
+                  ? (canBuyWholesale ? 'Verified Wholesale Tier Applied' : 'Wholesale Tier Preview (Requires Verified Wholesale Account)')
+                  : 'Retail Single Piece Order Mode'}
               </span>
             </div>
             <span className="font-mono font-bold text-gold bg-black/40 px-2 py-0.5 rounded border border-gold/20 text-[10px]">
-              {isWholesale ? `Min. ${product.moq || 4} Pcs` : 'Single Piece'}
+              {isWholesale ? `Min. ${moq} Pcs` : 'Single Piece'}
             </span>
           </div>
+          {addError && (
+            <div className="p-3 rounded-xl bg-red-950/80 border border-red-500/50 text-red-200 text-xs">
+              {addError}
+            </div>
+          )}
         </div>
 
         {/* Finish / Polish Selection */}
@@ -704,7 +753,13 @@ export default function ProductDetailPage() {
             <span className="text-outline uppercase font-semibold tracking-wider">
               Length / Size
             </span>
-            <span className="text-gold underline cursor-pointer">Chain Size Chart</span>
+            <button
+              type="button"
+              onClick={() => setShowSizeGuide(true)}
+              className="text-gold underline cursor-pointer"
+            >
+              Size Chart &amp; Guide
+            </button>
           </div>
           <div className="grid grid-cols-3 gap-2.5">
             {lengths.map((l) => (
@@ -758,10 +813,33 @@ export default function ProductDetailPage() {
           <h4 className="font-serif text-base font-bold text-gold-light">
             Design &amp; Quality Notes
           </h4>
-          <p>{product.description_en}</p>
+          <p>{lang === 'kn' ? (product.description_kn || product.description_en) : product.description_en}</p>
         </div>
 
       </section>
+
+      {/* Size Guide Modal */}
+      {showSizeGuide && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#280812] border border-gold/40 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-deep-3d">
+            <div className="flex items-center justify-between border-b border-gold/20 pb-3">
+              <h3 className="font-serif text-lg font-bold text-gold-light">Mahalaxmi Sizing Guide</h3>
+              <button
+                type="button"
+                onClick={() => setShowSizeGuide(false)}
+                className="text-ivory/70 hover:text-gold text-xs font-bold px-2 py-1 rounded-lg bg-black/40"
+              >
+                Close
+              </button>
+            </div>
+            <div className="text-xs text-ivory/80 space-y-2 leading-relaxed">
+              <p><strong className="text-gold-light">Chains &amp; Harams:</strong> 24 Inch sits below the collarbone; 30 Inch is standard mid-chest; 36 Inch is grand bridal length.</p>
+              <p><strong className="text-gold-light">Bangles &amp; Kadas:</strong> Standard Indian sizes 2.4 (2.25 in), 2.6 (2.375 in), and 2.8 (2.5 in).</p>
+              <p><strong className="text-gold-light">Agra Payal:</strong> Standard 10.5 Inch adult length with adjustable S-hook clasp.</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ==================== 3. FLOATING BOTTOM ACTION BAR ==================== */}
       <div className="fixed bottom-0 inset-x-0 z-40 bg-[#1D050D]/95 backdrop-blur-2xl border-t border-gold/40 p-4 shadow-deep-3d">
@@ -788,8 +866,8 @@ export default function ProductDetailPage() {
 
             <button
               onClick={handleAddToCart}
-              disabled={addingToCart}
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-gold via-gold-light to-gold text-wine-950 font-sans font-bold text-xs tracking-wider uppercase shadow-floating-gold active:scale-95 transition flex items-center space-x-2"
+              disabled={addingToCart || isOutOfStock}
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-gold via-gold-light to-gold text-wine-950 font-sans font-bold text-xs tracking-wider uppercase shadow-floating-gold active:scale-95 transition flex items-center space-x-2 disabled:opacity-50"
             >
               {addedToast ? (
                 <>
@@ -799,7 +877,7 @@ export default function ProductDetailPage() {
               ) : (
                 <>
                   <ShoppingBag className="w-4 h-4" />
-                  <span>{isWholesale ? `Order Lot (${quantity}pcs)` : 'Add to Cart'}</span>
+                  <span>{isOutOfStock ? 'Out of Stock' : isWholesale ? `Order Lot (${quantity}pcs)` : 'Add to Cart'}</span>
                 </>
               )}
             </button>

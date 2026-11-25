@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Save, QrCode, MapPin, Upload, Check, AlertCircle } from 'lucide-react';
+import { Settings, QrCode, Check, Plus, Trash2 } from 'lucide-react';
 import api from '../../services/api';
 
 export default function AdminSettingsPage() {
@@ -10,6 +10,7 @@ export default function AdminSettingsPage() {
     store_address: '',
     store_phone: '',
     store_whatsapp: '',
+    store_email: '',
     upi_id: '',
     upi_name: '',
     upi_qr_image: '',
@@ -24,13 +25,14 @@ export default function AdminSettingsPage() {
 
   // Pincodes management
   const [pincodes, setPincodes] = useState([]);
+  const [newPin, setNewPin] = useState({ pin_code: '', locality_name: '', delivery_fee: '40', min_order_amount: '300' });
 
   const fetchSettings = async () => {
     try {
       setLoading(true);
       const res = await api.get('/settings');
       if (res.data.success && res.data.settings) {
-        setSettings(res.data.settings);
+        setSettings(prev => ({ ...prev, ...res.data.settings }));
       }
 
       const pinRes = await api.get('/settings/pincodes');
@@ -63,8 +65,10 @@ export default function AdminSettingsPage() {
 
     try {
       const formData = new FormData();
-      for (let [k, v] of Object.entries(settings)) {
-        formData.append(k, v);
+      for (const [k, v] of Object.entries(settings)) {
+        if (v !== undefined && v !== null) {
+          formData.append(k, v);
+        }
       }
       if (qrFile) {
         formData.append('upi_qr_file', qrFile);
@@ -85,13 +89,34 @@ export default function AdminSettingsPage() {
     }
   };
 
+  const handleAddPincode = async () => {
+    if (!newPin.pin_code.trim() || !newPin.locality_name.trim()) return;
+    try {
+      const res = await api.post('/settings/pincodes', newPin);
+      if (res.data.success) {
+        setNewPin({ pin_code: '', locality_name: '', delivery_fee: '40', min_order_amount: '300' });
+        fetchSettings();
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to add PIN code.');
+    }
+  };
+
+  const handleDeletePincode = async (id) => {
+    if (!window.confirm('Remove this delivery PIN code?')) return;
+    try {
+      await api.delete(`/settings/pincodes/${id}`);
+      fetchSettings();
+    } catch (err) {}
+  };
+
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       <div className="bg-white p-6 rounded-3xl border border-stone-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold font-serif-luxury text-stone-900 flex items-center gap-2">
             <Settings className="w-5 h-5 text-purple-950" />
-            <span>Store Configuration & UPI QR Management</span>
+            <span>Store Configuration &amp; UPI QR Management</span>
           </h2>
           <p className="text-xs text-stone-500 mt-0.5">
             Update physical store contact info, payment QR image, and Kalaburagi delivery pricing
@@ -142,7 +167,7 @@ export default function AdminSettingsPage() {
                     required
                     value={settings.upi_id}
                     onChange={(e) => setSettings({ ...settings, upi_id: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 font-mono font-bold"
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 font-mono font-bold text-stone-900 bg-white"
                   />
                 </div>
 
@@ -153,7 +178,7 @@ export default function AdminSettingsPage() {
                     required
                     value={settings.upi_name}
                     onChange={(e) => setSettings({ ...settings, upi_name: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 font-bold"
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 font-bold text-stone-900 bg-white"
                   />
                 </div>
               </div>
@@ -164,7 +189,7 @@ export default function AdminSettingsPage() {
         {/* Business Contact & Proprietor Info */}
         <div className="bg-white rounded-3xl border border-stone-200 p-6 shadow-sm space-y-4 text-xs">
           <h3 className="font-serif-luxury font-bold text-base text-stone-900 border-b border-stone-100 pb-3">
-            Shop Information & Address
+            Shop Information &amp; Address
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -175,7 +200,7 @@ export default function AdminSettingsPage() {
                 required
                 value={settings.store_proprietor}
                 onChange={(e) => setSettings({ ...settings, store_proprietor: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl border border-stone-300 font-bold"
+                className="w-full px-3 py-2 rounded-xl border border-stone-300 font-bold text-stone-900 bg-white"
               />
             </div>
 
@@ -186,7 +211,7 @@ export default function AdminSettingsPage() {
                 required
                 value={settings.store_phone}
                 onChange={(e) => setSettings({ ...settings, store_phone: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl border border-stone-300 font-bold"
+                className="w-full px-3 py-2 rounded-xl border border-stone-300 font-bold text-stone-900 bg-white"
               />
             </div>
 
@@ -197,7 +222,7 @@ export default function AdminSettingsPage() {
                 required
                 value={settings.store_whatsapp}
                 onChange={(e) => setSettings({ ...settings, store_whatsapp: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl border border-stone-300 font-bold"
+                className="w-full px-3 py-2 rounded-xl border border-stone-300 font-bold text-stone-900 bg-white"
               />
             </div>
 
@@ -207,7 +232,7 @@ export default function AdminSettingsPage() {
                 type="number"
                 value={settings.free_delivery_threshold}
                 onChange={(e) => setSettings({ ...settings, free_delivery_threshold: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl border border-stone-300 font-bold"
+                className="w-full px-3 py-2 rounded-xl border border-stone-300 font-bold text-stone-900 bg-white"
               />
             </div>
 
@@ -218,14 +243,14 @@ export default function AdminSettingsPage() {
                 required
                 value={settings.store_address}
                 onChange={(e) => setSettings({ ...settings, store_address: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl border border-stone-300 font-medium"
+                className="w-full px-3 py-2 rounded-xl border border-stone-300 font-medium text-stone-900 bg-white"
               />
             </div>
           </div>
         </div>
 
         {/* Kalaburagi Delivery Pincodes Table */}
-        <div className="bg-white rounded-3xl border border-stone-200 p-6 shadow-sm space-y-3 text-xs">
+        <div className="bg-white rounded-3xl border border-stone-200 p-6 shadow-sm space-y-4 text-xs">
           <h3 className="font-serif-luxury font-bold text-base text-stone-900 border-b border-stone-100 pb-3">
             Active Kalaburagi Delivery Routes
           </h3>
@@ -238,6 +263,7 @@ export default function AdminSettingsPage() {
                   <th className="py-2 px-3">Locality / Landmarks</th>
                   <th className="py-2 px-3">Delivery Fee (₹)</th>
                   <th className="py-2 px-3">Min Order (₹)</th>
+                  <th className="py-2 px-3 text-right">Remove</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100 font-medium">
@@ -246,18 +272,61 @@ export default function AdminSettingsPage() {
                     <td className="py-2 px-3 font-mono font-bold text-purple-950">{pin.pin_code}</td>
                     <td className="py-2 px-3 text-stone-800">{pin.locality_name}</td>
                     <td className="py-2 px-3 font-bold text-emerald-800">₹{parseFloat(pin.delivery_fee).toFixed(2)}</td>
-                    <td className="py-2 px-3">₹{parseFloat(pin.min_order_amount).toFixed(2)}</td>
+                    <td className="py-2 px-3 text-stone-800">₹{parseFloat(pin.min_order_amount).toFixed(2)}</td>
+                    <td className="py-2 px-3 text-right">
+                      <button
+                        type="button"
+                        onClick={() => handleDeletePincode(pin.id)}
+                        className="text-stone-400 hover:text-red-600 p-1"
+                        title="Delete PIN"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 pt-2 border-t border-stone-100">
+            <input
+              type="text"
+              maxLength={6}
+              placeholder="PIN (e.g. 585106)"
+              value={newPin.pin_code}
+              onChange={(e) => setNewPin({ ...newPin, pin_code: e.target.value.replace(/\D/g, '').slice(0, 6) })}
+              className="px-3 py-2 rounded-xl border border-stone-300 font-mono text-stone-900 bg-white"
+            />
+            <input
+              type="text"
+              placeholder="Locality Name"
+              value={newPin.locality_name}
+              onChange={(e) => setNewPin({ ...newPin, locality_name: e.target.value })}
+              className="sm:col-span-2 px-3 py-2 rounded-xl border border-stone-300 text-stone-900 bg-white"
+            />
+            <input
+              type="number"
+              placeholder="Fee ₹"
+              value={newPin.delivery_fee}
+              onChange={(e) => setNewPin({ ...newPin, delivery_fee: e.target.value })}
+              className="px-3 py-2 rounded-xl border border-stone-300 text-stone-900 bg-white"
+            />
+            <button
+              type="button"
+              onClick={handleAddPincode}
+              className="px-3 py-2 rounded-xl bg-emerald-900 hover:bg-emerald-950 text-emerald-300 font-bold flex items-center justify-center gap-1"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add PIN</span>
+            </button>
+          </div>
         </div>
 
         <button
           type="submit"
-          disabled={saving}
-          className="w-full py-4 bg-emerald-850 hover:bg-emerald-900 text-mint-400 font-extrabold text-sm rounded-2xl shadow-lg transition"
+          disabled={saving || loading}
+          className="w-full py-4 bg-emerald-900 hover:bg-emerald-950 text-emerald-300 font-extrabold text-sm rounded-2xl shadow-lg transition disabled:opacity-50"
         >
           {saving ? 'Saving Changes...' : 'Save Settings & Configuration'}
         </button>

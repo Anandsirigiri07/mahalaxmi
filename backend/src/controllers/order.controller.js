@@ -1,12 +1,32 @@
 const { query, getConnection } = require('../config/db');
 
-/**
- * Generate Order Number (e.g. MN-20261123-1001)
- */
 function generateOrderNumber() {
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
   const randomSuffix = Math.floor(1000 + Math.random() * 9000);
   return `MN-${dateStr}-${randomSuffix}`;
+}
+
+function normalizeShippingAddress(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const pin_code = String(raw.pin_code || raw.pincode || '').trim();
+  const recipient_name = String(raw.recipient_name || raw.name || '').trim();
+  const phone = String(raw.phone || '').trim();
+  const address_line1 = String(raw.address_line1 || raw.street || '').trim();
+  const address_line2 = raw.address_line2 ? String(raw.address_line2).trim() : '';
+  const landmark = raw.landmark ? String(raw.landmark).trim() : '';
+  const city = String(raw.city || 'Kalaburagi').trim();
+  const state = String(raw.state || 'Karnataka').trim();
+
+  return {
+    recipient_name,
+    phone,
+    address_line1,
+    address_line2,
+    landmark,
+    city,
+    state,
+    pin_code
+  };
 }
 
 /**
@@ -19,16 +39,20 @@ async function placeOrder(req, res) {
     const {
       cart_id,
       items: directItems,
-      shipping_address,
-      payment_method, // 'upi_qr' or 'cod'
-      transaction_reference, // 12-digit UTR for UPI
+      shipping_address: rawAddress,
+      payment_method,
+      transaction_reference,
+      upi_utr,
       notes
     } = req.body;
 
-    if (!shipping_address || !shipping_address.pin_code) {
+    const shipping_address = normalizeShippingAddress(rawAddress);
+    const utrRef = String(transaction_reference || upi_utr || '').trim();
+
+    if (!shipping_address || !shipping_address.pin_code || !shipping_address.address_line1) {
       return res.status(400).json({
         success: false,
-        message: 'A valid Kalaburagi delivery address with PIN code is required.'
+        message: 'A valid delivery address with street details and PIN code is required.'
       });
     }
 
@@ -39,46 +63,43 @@ async function placeOrder(req, res) {
       });
     }
 
-    if (payment_method === 'upi_qr') {
-      if (!transaction_reference || transaction_reference.trim().length < 6) {
-        return res.status(400).json({
-          success: false,
-          message: 'Please provide the valid 12-digit UPI Transaction ID / UTR reference after scanning and paying.'
-        });
-      }
+    if (payment_method === 'upi_qr' && utrRef.length < 10) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide your valid 12-digit UPI Transaction ID / UTR reference after scanning and paying.'
+      });
     }
 
     // 1. Verify Local PIN Code eligibility
     const [pincodes] = await conn.execute(
       `SELECT * FROM delivery_pincodes WHERE pin_code = ? AND is_active = TRUE`,
-      [shipping_address.pin_code.trim()]
+      [shipping_address.pin_code]
     );
 
     if (pincodes.length === 0) {
       return res.status(400).json({
         success: false,
-        message: `PIN code ${shipping_address.pin_code} is currently outside our local Kalaburagi delivery zone. Please contact us via WhatsApp for custom parcel arrangements.`
+        message: `PIN code ${shipping_address.pin_code} is currently outside our local Kalaburagi delivery zone. Please contact us via WhatsApp (+91 98800 42188) for custom parcel arrangements.`
       });
     }
 
     const pinRule = pincodes[0];
+    shipping_address.locality_name = pinRule.locality_name;
 
-    // 2. Retrieve Items (from cart or direct payload)
+    // 2. Retrieve Items (from user-owned cart or direct payload)
     let orderItems = [];
 
     if (cart_id) {
       const [dbCartItems] = await conn.execute(
         `SELECT ci.*, p.sku, p.name_en, p.retail_price, p.wholesale_price, p.moq
          FROM cart_items ci
+         INNER JOIN carts c ON ci.cart_id = c.id
          INNER JOIN products p ON ci.product_id = p.id
-         WHERE ci.cart_id = ?`,
-        [cart_id]
+         WHERE ci.cart_id = ? AND c.user_id = ?`,
+        [cart_id, userId]
       );
       orderItems = dbCartItems;
-    } else if (directItems && Array.isArray(directItems) && directItems.length > 0) {
-      orderItems = directItems;
     } else {
-      // Find user's active cart
       const [userCarts] = await conn.execute(`SELECT id FROM carts WHERE user_id = ? LIMIT 1`, [userId]);
       if (userCarts.length > 0) {
         const [dbCartItems] = await conn.execute(
@@ -90,6 +111,9 @@ async function placeOrder(req, res) {
         );
         orderItems = dbCartItems;
       }
+      if (orderItems.length === 0 && directItems && Array.isArray(directItems) && directItems.length > 0) {
+        orderItems = directItems;
+      }
     }
 
     if (orderItems.length === 0) {
@@ -99,38 +123,47 @@ async function placeOrder(req, res) {
       });
     }
 
-    // Start Transaction for Stock Reservation & Order Placement
     await conn.beginTransaction();
 
     let subtotal = 0;
     const validatedItems = [];
-    const isWholesaleBuyer = req.user.account_type === 'wholesale' && req.user.verification_status === 'approved';
+    const isWholesaleBuyer =
+      req.user.role === 'admin' ||
+      (req.user.account_type === 'wholesale' && req.user.verification_status === 'approved');
 
     // 3. Lock & Validate Inventory for each product
-    for (let item of orderItems) {
+    for (const item of orderItems) {
+      const productId = item.product_id || item.id;
+      const qty = parseInt(item.quantity, 10);
+
+      if (!productId || !Number.isInteger(qty) || qty <= 0) {
+        await conn.rollback();
+        return res.status(400).json({
+          success: false,
+          message: 'All order items must have a valid product ID and positive quantity.'
+        });
+      }
+
       const [invRows] = await conn.execute(
-        `SELECT p.id, p.sku, p.name_en, p.retail_price, p.wholesale_price, p.moq,
+        `SELECT p.id, p.sku, p.name_en, p.retail_price, p.wholesale_price, p.moq, p.is_active,
                 COALESCE(i.physical_stock, 0) AS physical_stock,
                 COALESCE(i.reserved_stock, 0) AS reserved_stock
          FROM products p
          LEFT JOIN inventory i ON p.id = i.product_id
          WHERE p.id = ? FOR UPDATE`,
-        [item.product_id]
+        [productId]
       );
 
-      if (invRows.length === 0) {
+      if (invRows.length === 0 || !invRows[0].is_active) {
         await conn.rollback();
         return res.status(400).json({
           success: false,
-          message: `Item with product ID ${item.product_id} no longer exists.`
+          message: `Item with product ID ${productId} is unavailable.`
         });
       }
 
       const prod = invRows[0];
       const available = prod.physical_stock - prod.reserved_stock;
-      const qty = parseInt(item.quantity, 10);
-
-      if (qty <= 0) continue;
 
       if (qty > available) {
         await conn.rollback();
@@ -140,7 +173,11 @@ async function placeOrder(req, res) {
         });
       }
 
-      const useWholesale = (item.is_wholesale_pricing || isWholesaleBuyer) && qty >= prod.moq;
+      const requestedWholesale = item.is_wholesale_pricing !== undefined
+        ? Boolean(item.is_wholesale_pricing)
+        : (item.is_wholesale !== undefined ? Boolean(item.is_wholesale) : isWholesaleBuyer);
+
+      const useWholesale = isWholesaleBuyer && requestedWholesale && qty >= (prod.moq || 1);
       const unitPrice = useWholesale ? parseFloat(prod.wholesale_price) : parseFloat(prod.retail_price);
       const lineTotal = unitPrice * qty;
 
@@ -159,9 +196,25 @@ async function placeOrder(req, res) {
       });
     }
 
+    if (validatedItems.length === 0) {
+      await conn.rollback();
+      return res.status(400).json({
+        success: false,
+        message: 'No valid items found in order.'
+      });
+    }
+
+    const minOrderForPin = parseFloat(pinRule.min_order_amount || 0);
+    if (subtotal < minOrderForPin) {
+      await conn.rollback();
+      return res.status(400).json({
+        success: false,
+        message: `Minimum order amount for PIN ${shipping_address.pin_code} is ₹${minOrderForPin.toFixed(0)}.`
+      });
+    }
+
     // 4. Calculate Delivery Charges
     let deliveryCharge = parseFloat(pinRule.delivery_fee || 40);
-    // Fetch free delivery threshold from settings
     const [settingRows] = await conn.execute(
       `SELECT setting_value FROM business_settings WHERE setting_key = 'free_delivery_threshold'`
     );
@@ -173,7 +226,7 @@ async function placeOrder(req, res) {
 
     const totalAmount = subtotal + deliveryCharge;
     const orderNumber = generateOrderNumber();
-    const orderType = isWholesaleBuyer ? 'wholesale' : 'retail';
+    const orderType = validatedItems.some(i => i.is_wholesale === 1) ? 'wholesale' : 'retail';
     const orderStatus = 'pending';
     const paymentStatus = payment_method === 'upi_qr' ? 'pending_verification' : 'pending';
 
@@ -200,7 +253,7 @@ async function placeOrder(req, res) {
     const orderId = orderResult.insertId;
 
     // 6. Insert Order Items & Reserve Stock
-    for (let item of validatedItems) {
+    for (const item of validatedItems) {
       await conn.execute(
         `INSERT INTO order_items (order_id, product_id, variant_id, product_name, sku, unit_price, quantity, subtotal, is_wholesale)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -217,14 +270,12 @@ async function placeOrder(req, res) {
         ]
       );
 
-      // Reserve stock in inventory
       const newReserved = item.current_reserved + item.quantity;
       await conn.execute(
         `UPDATE inventory SET reserved_stock = ? WHERE product_id = ?`,
         [newReserved, item.product_id]
       );
 
-      // Log inventory transaction (order_reserved)
       await conn.execute(
         `INSERT INTO inventory_transactions
          (product_id, transaction_type, quantity, previous_physical_stock, new_physical_stock, previous_reserved_stock, new_reserved_stock, reference_id, created_by_user_id, notes)
@@ -252,7 +303,7 @@ async function placeOrder(req, res) {
         userId,
         payment_method,
         totalAmount,
-        payment_method === 'upi_qr' ? transaction_reference.trim() : null,
+        payment_method === 'upi_qr' ? utrRef : null,
         paymentStatus
       ]
     );
@@ -263,7 +314,7 @@ async function placeOrder(req, res) {
        VALUES (?, ?, 'assigned', ?)`,
       [
         orderId,
-        shipping_address.pin_code.trim(),
+        shipping_address.pin_code,
         `Order placed for ${pinRule.locality_name}, Kalaburagi.`
       ]
     );
@@ -291,13 +342,16 @@ async function placeOrder(req, res) {
       message: payment_method === 'upi_qr'
         ? 'Order placed successfully! Your UPI payment reference is queued for Admin verification.'
         : 'Order placed successfully with Cash on Delivery!',
+      order_id: orderId,
       order: {
         id: orderId,
         order_number: orderNumber,
+        subtotal,
+        delivery_charge: deliveryCharge,
         total_amount: totalAmount,
         order_status: orderStatus,
         payment_status: paymentStatus,
-        payment_method: payment_method
+        payment_method
       }
     });
   } catch (error) {
@@ -313,26 +367,34 @@ async function placeOrder(req, res) {
 }
 
 /**
- * Customer: Get My Orders
+ * Customer: Get My Orders (with items)
  */
 async function getMyOrders(req, res) {
   try {
     const orders = await query(
       `SELECT o.*,
-              COUNT(oi.id) AS item_count,
+              (SELECT COUNT(*) FROM order_items WHERE order_id = o.id) AS item_count,
               p.transaction_reference,
               d.delivery_status,
               d.delivery_agent_name,
               d.delivery_agent_phone
        FROM orders o
-       LEFT JOIN order_items oi ON o.id = oi.order_id
        LEFT JOIN payments p ON o.id = p.order_id
        LEFT JOIN deliveries d ON o.id = d.order_id
        WHERE o.user_id = ?
-       GROUP BY o.id
        ORDER BY o.created_at DESC`,
       [req.user.id]
     );
+
+    for (const order of orders) {
+      order.items = await query(
+        `SELECT oi.*,
+                (SELECT image_url FROM product_images WHERE product_id = oi.product_id ORDER BY is_primary DESC, display_order ASC, id ASC LIMIT 1) AS image_url
+         FROM order_items oi
+         WHERE oi.order_id = ?`,
+        [order.id]
+      );
+    }
 
     return res.json({
       success: true,
@@ -348,7 +410,7 @@ async function getMyOrders(req, res) {
 }
 
 /**
- * Customer: Get Order Details by ID
+ * Customer / Admin: Get Order Details by ID
  */
 async function getOrderDetails(req, res) {
   try {
@@ -389,11 +451,9 @@ async function getOrderDetails(req, res) {
     }
 
     const order = orders[0];
-
-    // Fetch Items
     const items = await query(
       `SELECT oi.*, 
-              (SELECT image_url FROM product_images WHERE product_id = oi.product_id ORDER BY is_primary DESC, id ASC LIMIT 1) AS image_url
+              (SELECT image_url FROM product_images WHERE product_id = oi.product_id ORDER BY is_primary DESC, display_order ASC, id ASC LIMIT 1) AS image_url
        FROM order_items oi
        WHERE oi.order_id = ?`,
       [id]
@@ -413,7 +473,7 @@ async function getOrderDetails(req, res) {
 }
 
 /**
- * Customer / Admin: Cancel Order (Releases Reserved Stock)
+ * Customer / Admin: Cancel Order (Releases Reserved Stock or Restores Deducted Physical Stock)
  */
 async function cancelOrder(req, res) {
   const conn = await getConnection();
@@ -425,8 +485,7 @@ async function cancelOrder(req, res) {
 
     await conn.beginTransaction();
 
-    let sql = `SELECT * FROM orders WHERE id = ? FOR UPDATE`;
-    const [orders] = await conn.execute(sql, [id]);
+    const [orders] = await conn.execute(`SELECT * FROM orders WHERE id = ? FOR UPDATE`, [id]);
 
     if (orders.length === 0) {
       await conn.rollback();
@@ -435,12 +494,12 @@ async function cancelOrder(req, res) {
 
     const order = orders[0];
 
-    if (!isAdmin && order.user_id !== userId) {
+    if (!isAdmin && Number(order.user_id) !== Number(userId)) {
       await conn.rollback();
       return res.status(403).json({ success: false, message: 'Unauthorized.' });
     }
 
-    if (['delivered', 'cancelled'].includes(order.order_status)) {
+    if (['delivered', 'cancelled', 'return_requested'].includes(order.order_status)) {
       await conn.rollback();
       return res.status(400).json({
         success: false,
@@ -448,10 +507,10 @@ async function cancelOrder(req, res) {
       });
     }
 
-    // Release reserved inventory
+    const prevStatus = order.order_status;
     const [items] = await conn.execute(`SELECT * FROM order_items WHERE order_id = ?`, [id]);
 
-    for (let item of items) {
+    for (const item of items) {
       const [invRows] = await conn.execute(
         `SELECT physical_stock, reserved_stock FROM inventory WHERE product_id = ? FOR UPDATE`,
         [item.product_id]
@@ -459,12 +518,16 @@ async function cancelOrder(req, res) {
 
       if (invRows.length > 0) {
         const inv = invRows[0];
-        // If order was already confirmed/delivered, physical was deducted; if pending/processing, reserved was held
-        let newReserved = Math.max(0, inv.reserved_stock - item.quantity);
-        await conn.execute(
-          `UPDATE inventory SET reserved_stock = ? WHERE product_id = ?`,
-          [newReserved, item.product_id]
-        );
+        let newPhysical = inv.physical_stock;
+        let newReserved = inv.reserved_stock;
+
+        if (prevStatus === 'pending') {
+          newReserved = Math.max(0, inv.reserved_stock - item.quantity);
+          await conn.execute(`UPDATE inventory SET reserved_stock = ? WHERE product_id = ?`, [newReserved, item.product_id]);
+        } else {
+          newPhysical = inv.physical_stock + item.quantity;
+          await conn.execute(`UPDATE inventory SET physical_stock = ? WHERE product_id = ?`, [newPhysical, item.product_id]);
+        }
 
         await conn.execute(
           `INSERT INTO inventory_transactions
@@ -474,7 +537,7 @@ async function cancelOrder(req, res) {
             item.product_id,
             item.quantity,
             inv.physical_stock,
-            inv.physical_stock,
+            newPhysical,
             inv.reserved_stock,
             newReserved,
             order.order_number,
@@ -485,7 +548,6 @@ async function cancelOrder(req, res) {
       }
     }
 
-    // Update order status
     await conn.execute(
       `UPDATE orders SET order_status = 'cancelled', notes = CONCAT(COALESCE(notes, ''), ' [Cancelled: ', ?, ']') WHERE id = ?`,
       [reason || 'User cancelled', id]
@@ -534,6 +596,14 @@ async function requestReturn(req, res) {
     }
 
     const order = orders[0];
+
+    const existingReturns = await query(`SELECT id FROM returns WHERE order_id = ?`, [id]);
+    if (existingReturns && existingReturns.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: 'A return request has already been submitted for this order.'
+      });
+    }
 
     if (order.order_status !== 'delivered') {
       return res.status(400).json({

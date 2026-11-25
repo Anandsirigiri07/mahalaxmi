@@ -439,28 +439,27 @@ export default function HomePage() {
 
   const handleCheckPincode = async (e) => {
     e.preventDefault();
-    if (!pincodeInput || pincodeInput.trim().length !== 6) return;
+    const cleanPin = pincodeInput.trim();
+    if (!cleanPin || cleanPin.length !== 6) return;
     setCheckingPin(true);
     try {
-      const res = await api.get(`/settings/pincodes/check/${pincodeInput.trim()}`);
+      const res = await api.get(`/settings/pincodes/check/${cleanPin}`);
       setPincodeResult(res.data);
     } catch (err) {
       const validPins = ['585101', '585102', '585103', '585104', '585105'];
-      if (validPins.includes(pincodeInput.trim())) {
+      if (validPins.includes(cleanPin)) {
         setPincodeResult({
           success: true,
-          delivery_available: true,
-          fee: 40,
-          free_delivery_threshold: 1500,
-          zone: 'Kalaburagi City Direct Express'
+          is_serviceable: true,
+          locality: 'Kalaburagi City Direct Express',
+          delivery_fee: cleanPin === '585101' ? 30 : cleanPin === '585104' ? 50 : 40,
+          free_delivery_threshold: 1500
         });
       } else {
         setPincodeResult({
-          success: true,
-          delivery_available: true,
-          fee: 90,
-          free_delivery_threshold: 3000,
-          zone: 'Karnataka & Inter-State Courier'
+          success: false,
+          is_serviceable: false,
+          message: `PIN code ${cleanPin} is outside our direct local delivery zone in Kalaburagi.`
         });
       }
     } finally {
@@ -737,7 +736,7 @@ export default function HomePage() {
             </h2>
           </div>
           <span className="text-xs text-gold-light font-medium">
-            11 Designs Available
+            {products.length} Designs Available
           </span>
         </div>
 
@@ -786,13 +785,24 @@ export default function HomePage() {
 
           {pincodeResult && (
             <div className="mt-4 pt-3 border-t border-gold/20 flex items-center space-x-2 text-xs">
-              <span className="w-2 h-2 rounded-full bg-gold shadow-[0_0_8px_#D4AF6A]"></span>
-              <span className="text-gold-light font-semibold">
-                {pincodeResult.zone || 'Express Delivery Available'}
-              </span>
-              <span className="text-ivory/70">
-                · Delivery Fee: ₹{pincodeResult.fee || 40} (Free above ₹{pincodeResult.free_delivery_threshold || 1500})
-              </span>
+              {pincodeResult.is_serviceable ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-gold shadow-[0_0_8px_#D4AF6A] shrink-0"></span>
+                  <span className="text-gold-light font-semibold">
+                    {pincodeResult.locality || 'Express Delivery Available'}
+                  </span>
+                  <span className="text-ivory/70">
+                    · Delivery Fee: ₹{pincodeResult.delivery_fee ?? 40} (Free above ₹{pincodeResult.free_delivery_threshold ?? 1500})
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-red-400 shrink-0"></span>
+                  <span className="text-amber-300">
+                    {pincodeResult.message || 'PIN code outside direct local delivery zone.'}
+                  </span>
+                </>
+              )}
             </div>
           )}
         </div>

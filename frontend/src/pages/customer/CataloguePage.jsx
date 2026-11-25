@@ -382,9 +382,13 @@ export default function CataloguePage() {
   const [inStockOnly, setInStockOnly] = useState(false);
 
   const selectedCategory = searchParams.get('category') || '';
-  const initialSearch = searchParams.get('search') || '';
-  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const searchQueryParam = searchParams.get('search') || '';
+  const [searchTerm, setSearchTerm] = useState(searchQueryParam);
   const [sortBy, setSortBy] = useState('newest');
+
+  useEffect(() => {
+    setSearchTerm(searchQueryParam);
+  }, [searchQueryParam]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -392,29 +396,26 @@ export default function CataloguePage() {
         setLoading(true);
         const params = {};
         if (selectedCategory) params.category_slug = selectedCategory;
-        if (searchTerm) params.search = searchTerm;
+        if (searchQueryParam) params.search = searchQueryParam;
         if (sortBy) params.sort = sortBy;
 
         const res = await api.get('/products', { params });
-        if (res.data.success && res.data.products && res.data.products.length > 0) {
+        if (res.data.success && Array.isArray(res.data.products)) {
           setProducts(res.data.products);
-        } else {
-          let filtered = [...verifiedProducts];
-          if (selectedCategory) {
-            filtered = filtered.filter(p => p.category_slug === selectedCategory);
-          }
-          if (searchTerm) {
-            filtered = filtered.filter(p => 
-              p.name_en.toLowerCase().includes(searchTerm.toLowerCase()) || 
-              p.sku.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-          }
-          setProducts(filtered);
+          return;
         }
       } catch (err) {
         let filtered = [...verifiedProducts];
         if (selectedCategory) {
           filtered = filtered.filter(p => p.category_slug === selectedCategory);
+        }
+        if (searchQueryParam) {
+          const term = searchQueryParam.toLowerCase();
+          filtered = filtered.filter(p =>
+            p.name_en.toLowerCase().includes(term) ||
+            (p.name_kn && p.name_kn.toLowerCase().includes(term)) ||
+            p.sku.toLowerCase().includes(term)
+          );
         }
         setProducts(filtered);
       } finally {
@@ -423,7 +424,7 @@ export default function CataloguePage() {
     };
 
     fetchProducts();
-  }, [selectedCategory, sortBy]);
+  }, [selectedCategory, searchQueryParam, sortBy]);
 
   const handleCategorySelect = (slug) => {
     if (slug) {
@@ -472,7 +473,7 @@ export default function CataloguePage() {
               <Link to="/" className="hover:text-gold transition">HOME</Link>
               <span>/</span>
               <span className="text-gold font-semibold">
-                {selectedCategory ? selectedCategory.toUpperCase().replace('-', ' ') : 'ALL JEWELLERY'}
+                {selectedCategory ? selectedCategory.toUpperCase().replaceAll('-', ' ') : 'ALL JEWELLERY'}
               </span>
             </div>
           </div>
@@ -499,7 +500,7 @@ export default function CataloguePage() {
                 : 'Jewellery Wholesale & Retail Vitrine'}
             </h1>
             <p className="text-xs text-ivory/75 mt-1">
-              Verified supplier pricing with dual rates: Wholesale (₹650 to ₹2,500) and Retail. Order individual pieces or full dealer lots.
+              Verified supplier pricing with dual rates: Wholesale (₹220 to ₹2,500) and Retail. Order individual pieces or full dealer lots.
             </p>
           </div>
 
@@ -619,6 +620,7 @@ export default function CataloguePage() {
               onClick={() => {
                 setSearchParams({});
                 setSearchTerm('');
+                setInStockOnly(false);
               }}
               className="mt-4 px-4 py-2 rounded-xl bg-gold text-wine-950 font-bold text-xs uppercase"
             >

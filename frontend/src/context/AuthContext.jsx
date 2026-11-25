@@ -1,30 +1,37 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
-import { 
-  supabase, 
-  isSupabaseConfigured, 
-  supabaseSignIn, 
-  supabaseSignUp, 
+import {
+  supabase,
+  isSupabaseConfigured,
+  supabaseSignIn,
+  supabaseSignUp,
   supabaseSignInWithGoogle,
-  supabaseSignOut, 
+  supabaseSignOut,
   supabaseGetSession,
-  supabaseOnAuthStateChange 
+  supabaseOnAuthStateChange
 } from '../services/supabase';
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
+function readStoredUser() {
+  try {
     const saved = localStorage.getItem('mn_user');
     return saved ? JSON.parse(saved) : null;
-  });
+  } catch (e) {
+    localStorage.removeItem('mn_user');
+    return null;
+  }
+}
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(readStoredUser);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let unsubscribeSupabase = () => {};
 
     const checkAuth = async () => {
-      // 1. If Supabase is configured, check Supabase session
+      // 1. Check Supabase session if configured
       if (isSupabaseConfigured && supabase) {
         try {
           const session = await supabaseGetSession();
@@ -35,11 +42,11 @@ export const AuthProvider = ({ children }) => {
               email: sbUser.email,
               full_name: sbUser.user_metadata?.full_name || sbUser.email.split('@')[0],
               phone: sbUser.user_metadata?.phone || '',
-              role: sbUser.user_metadata?.role || (sbUser.email === 'admin@mahalaxminovelties.com' ? 'admin' : 'customer'),
+              role: sbUser.user_metadata?.role || 'customer',
               account_type: sbUser.user_metadata?.account_type || (sbUser.user_metadata?.business_name ? 'wholesale' : 'retail'),
               verification_status: sbUser.user_metadata?.is_verified_wholesale ? 'approved' : 'pending',
-              business_name: sbUser.user_metadata?.business_name || '',
-              gstin: sbUser.user_metadata?.gstin || ''
+              shop_name: sbUser.user_metadata?.business_name || '',
+              gst_number: sbUser.user_metadata?.gstin || ''
             };
             setUser(mappedUser);
             localStorage.setItem('mn_user', JSON.stringify(mappedUser));
@@ -53,11 +60,11 @@ export const AuthProvider = ({ children }) => {
                 email: sbUser.email,
                 full_name: sbUser.user_metadata?.full_name || sbUser.email.split('@')[0],
                 phone: sbUser.user_metadata?.phone || '',
-                role: sbUser.user_metadata?.role || (sbUser.email === 'admin@mahalaxminovelties.com' ? 'admin' : 'customer'),
+                role: sbUser.user_metadata?.role || 'customer',
                 account_type: sbUser.user_metadata?.account_type || (sbUser.user_metadata?.business_name ? 'wholesale' : 'retail'),
                 verification_status: sbUser.user_metadata?.is_verified_wholesale ? 'approved' : 'pending',
-                business_name: sbUser.user_metadata?.business_name || '',
-                gstin: sbUser.user_metadata?.gstin || ''
+                shop_name: sbUser.user_metadata?.business_name || '',
+                gst_number: sbUser.user_metadata?.gstin || ''
               };
               setUser(mapped);
               localStorage.setItem('mn_user', JSON.stringify(mapped));
@@ -71,9 +78,9 @@ export const AuthProvider = ({ children }) => {
         }
       }
 
-      // 2. Check local JWT session
+      // 2. Always verify local JWT session against backend so role/approval changes sync live
       const token = localStorage.getItem('mn_token');
-      if (token && !user) {
+      if (token) {
         try {
           const res = await api.get('/auth/me');
           if (res.data.success && res.data.user) {
@@ -81,7 +88,11 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('mn_user', JSON.stringify(res.data.user));
           }
         } catch (err) {
-          // Keep existing local user state or clean expired
+          if (err.response?.status === 401) {
+            localStorage.removeItem('mn_token');
+            localStorage.removeItem('mn_user');
+            setUser(null);
+          }
         }
       }
 
@@ -96,7 +107,6 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    // Check if Supabase configured
     if (isSupabaseConfigured && supabase) {
       try {
         const data = await supabaseSignIn({ email, password });
@@ -106,7 +116,7 @@ export const AuthProvider = ({ children }) => {
             email: data.user.email,
             full_name: data.user.user_metadata?.full_name || email.split('@')[0],
             phone: data.user.user_metadata?.phone || '',
-            role: data.user.email === 'admin@mahalaxminovelties.com' ? 'admin' : (data.user.user_metadata?.role || 'customer'),
+            role: data.user.user_metadata?.role || 'customer',
             account_type: data.user.user_metadata?.business_name ? 'wholesale' : 'retail',
             verification_status: data.user.user_metadata?.is_verified_wholesale ? 'approved' : 'pending'
           };
@@ -115,11 +125,10 @@ export const AuthProvider = ({ children }) => {
           return { success: true, user: mapped };
         }
       } catch (err) {
-        console.warn('Supabase sign-in attempt:', err.message);
+        console.warn('Supabase sign-in fallback to backend API:', err.message);
       }
     }
 
-    // Default to local backend API
     try {
       const res = await api.post('/auth/login', { email, password });
       if (res.data.success) {
@@ -136,7 +145,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const getOwnerStatus = async () => {
+  const getOwnerStatus = useCallback(async () => {
     try {
       const res = await api.get('/auth/owner-status');
       return res.data;
@@ -153,7 +162,7 @@ export const AuthProvider = ({ children }) => {
         message: 'Store Owner account is registered. Registration is permanently closed.'
       };
     }
-  };
+  }, []);
 
   const ownerRegister = async (data) => {
     try {
@@ -174,26 +183,10 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithGoogle = async () => {
     if (isSupabaseConfigured && supabase) {
-      try {
-        await supabaseSignInWithGoogle();
-        return { success: true };
-      } catch (err) {
-        console.warn('Supabase Google OAuth attempt:', err.message);
-      }
+      await supabaseSignInWithGoogle();
+      return { success: true };
     }
-
-    // Google Sign-In for standard customer access (guaranteed customer role)
-    const googleUser = {
-      id: 'g_' + Math.random().toString(36).substr(2, 9),
-      email: 'customer@gmail.com',
-      full_name: 'Verified Customer',
-      role: 'customer',
-      account_type: 'retail',
-      auth_provider: 'google'
-    };
-    localStorage.setItem('mn_user', JSON.stringify(googleUser));
-    setUser(googleUser);
-    return { success: true, user: googleUser };
+    throw new Error('Google Sign-In requires Supabase OAuth configuration. Please sign in or register using your email and password.');
   };
 
   const ownerLogin = async (credentials) => {
@@ -202,7 +195,7 @@ export const AuthProvider = ({ children }) => {
     const cleanPin = String(payload.pin || payload.password || '').trim();
 
     if (!cleanId || !cleanPin) {
-      throw new Error('Please enter both your registered Owner Email/Phone and secret Passcode.');
+      throw new Error('Please enter both your registered Owner Email/Phone and password.');
     }
 
     try {
@@ -216,42 +209,8 @@ export const AuthProvider = ({ children }) => {
       }
       throw new Error(res.data.message || 'Owner authentication failed.');
     } catch (apiErr) {
-      if (apiErr.response?.status === 403) {
-        throw new Error(apiErr.response.data.message);
-      }
-      if (apiErr.response?.status === 401) {
-        throw new Error(apiErr.response.data.message || 'Invalid Owner Passcode. Access denied.');
-      }
-
-      // Check offline / fallback credentials (strictly requires valid identifier + PIN)
-      const validIdentifiers = [
-        '9481242188',
-        'manohar@mahalaxminovelties.com',
-        '9880042188',
-        'jajpal@mahalaxminovelties.com',
-        'admin@mahalaxminovelties.com'
-      ];
-
-      const cleanLowerId = cleanId.toLowerCase();
-      const isIdMatch = validIdentifiers.some(id => cleanLowerId.includes(id.toLowerCase()));
-      const validPins = ['1250', '7860', '2026', 'Admin@123'];
-      const isPinMatch = validPins.includes(cleanPin);
-
-      if (!isIdMatch || !isPinMatch) {
-        throw new Error('Invalid Owner Credentials. Only the verified store owner can access this portal.');
-      }
-
-      const ownerUser = {
-        id: 1,
-        full_name: 'Manoharsingh P. Rathore (Proprietor)',
-        email: 'manohar@mahalaxminovelties.com',
-        phone: '9481242188',
-        role: 'admin',
-        account_type: 'wholesale'
-      };
-      localStorage.setItem('mn_user', JSON.stringify(ownerUser));
-      setUser(ownerUser);
-      return { success: true, user: ownerUser };
+      const msg = apiErr.response?.data?.message || apiErr.message || 'Owner authentication failed.';
+      throw new Error(msg);
     }
   };
 
@@ -264,20 +223,21 @@ export const AuthProvider = ({ children }) => {
           full_name: userData.full_name,
           phone: userData.phone,
           role: 'customer',
-          business_name: userData.business_name || '',
-          gstin: userData.gstin || ''
+          business_name: userData.shop_name || userData.business_name || '',
+          gstin: userData.gst_number || userData.gstin || ''
         });
         if (data?.user) {
+          const isW = userData.account_type === 'wholesale';
           const mapped = {
             id: data.user.id,
             email: userData.email,
             full_name: userData.full_name,
             phone: userData.phone,
             role: 'customer',
-            account_type: userData.business_name ? 'wholesale' : 'retail',
-            verification_status: userData.business_name ? 'pending' : 'approved',
-            business_name: userData.business_name || '',
-            gstin: userData.gstin || ''
+            account_type: isW ? 'wholesale' : 'retail',
+            verification_status: isW ? 'pending' : null,
+            shop_name: userData.shop_name || userData.business_name || '',
+            gst_number: userData.gst_number || userData.gstin || ''
           };
           setUser(mapped);
           localStorage.setItem('mn_user', JSON.stringify(mapped));
@@ -288,16 +248,20 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
-    // Default to local backend API
-    const res = await api.post('/auth/register', userData);
-    if (res.data.success) {
-      const { token, user: newUser } = res.data;
-      localStorage.setItem('mn_token', token);
-      localStorage.setItem('mn_user', JSON.stringify(newUser));
-      setUser(newUser);
-      return res.data;
+    try {
+      const res = await api.post('/auth/register', userData);
+      if (res.data.success) {
+        const { token, user: newUser } = res.data;
+        localStorage.setItem('mn_token', token);
+        localStorage.setItem('mn_user', JSON.stringify(newUser));
+        setUser(newUser);
+        return res.data;
+      }
+      throw new Error(res.data.message || 'Registration failed.');
+    } catch (apiErr) {
+      const msg = apiErr.response?.data?.message || apiErr.message || 'Registration failed.';
+      throw new Error(msg);
     }
-    throw new Error(res.data.message || 'Registration failed.');
   };
 
   const logout = async () => {
@@ -327,10 +291,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const isAdmin = user && user.role === 'admin';
-  const isWholesale = user && user.account_type === 'wholesale';
-  const isWholesaleApproved = isWholesale && user.verification_status === 'approved';
-  const isWholesalePending = isWholesale && user.verification_status === 'pending';
+  const isAdmin = Boolean(user && user.role === 'admin');
+  const isWholesale = Boolean(user && user.account_type === 'wholesale');
+  const isWholesaleApproved = Boolean(isWholesale && user.verification_status === 'approved');
+  const isWholesalePending = Boolean(isWholesale && user.verification_status === 'pending');
 
   return (
     <AuthContext.Provider value={{

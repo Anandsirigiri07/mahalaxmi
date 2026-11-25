@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Sparkles, X, Send, Bot, User, Check, ExternalLink } from 'lucide-react';
-import { getAiStylistAdvice, isGeminiConfigured } from '../../services/aiStylist';
+import React, { useState, useEffect } from 'react';
+import { Sparkles, X, Send } from 'lucide-react';
+import { getAiStylistAdvice, checkAiStatus } from '../../services/aiStylist';
 import { Link } from 'react-router-dom';
+import { useCart } from '../../context/CartContext';
 
 const quickPrompts = [
   '👑 Recommend wedding bangle set for bride',
@@ -11,18 +12,26 @@ const quickPrompts = [
 ];
 
 export default function AiStylistModal({ isOpen, onClose }) {
+  const { orderMode } = useCart();
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
+  const [geminiActive, setGeminiActive] = useState(false);
   const [messages, setMessages] = useState([
     {
       sender: 'bot',
       text: 'Namaste! Welcome to Mahalaxmi Novelties AI Jewellery Stylist & Wholesale Advisor. How can I help curate the perfect imitation jewellery pieces or bulk lot for you today?',
       suggestedProducts: [
-        { name: 'Royal Antique Filigree Patli Kada', price: '₹450 wholesale', sku: 'MN-BG-001' },
-        { name: 'Rajwadi Choker & Kemp Jhumka Set', price: '₹790 wholesale', sku: 'MN-NK-402' }
+        { id: 1, name: 'Royal Kemp Stone Antique Kada / Bajuband Pair', price: '₹1,250 wholesale', sku: 'MN-VJ-1250', category: 'patli-bangles' },
+        { id: 2, name: 'Heritage Temple Haram Long Necklace', price: '₹1,080 wholesale', sku: 'MN-NK-1080', category: 'necklaces' }
       ]
     }
   ]);
+
+  useEffect(() => {
+    if (isOpen) {
+      checkAiStatus().then(setGeminiActive).catch(() => setGeminiActive(false));
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -36,7 +45,7 @@ export default function AiStylistModal({ isOpen, onClose }) {
     setLoading(true);
 
     try {
-      const result = await getAiStylistAdvice(textToSend);
+      const result = await getAiStylistAdvice(textToSend, orderMode || 'retail');
       const botMsg = {
         sender: 'bot',
         text: result.reply,
@@ -49,7 +58,7 @@ export default function AiStylistModal({ isOpen, onClose }) {
         ...prev,
         {
           sender: 'bot',
-          text: 'I apologize, could not process your query at this moment. Please browse our catalogue or WhatsApp our Kalaburagi showroom directly at +91 94812 42188.'
+          text: 'I apologize, could not process your query at this moment. Please browse our catalogue or WhatsApp our Kalaburagi showroom directly at +91 98800 42188.'
         }
       ]);
     } finally {
@@ -59,9 +68,7 @@ export default function AiStylistModal({ isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md">
-      <div className="relative w-full max-w-lg bg-[#280812] border border-gold/40 rounded-3xl shadow-deep-3d overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200">
-        
-        {/* Decorative ambient glow */}
+      <div className="relative w-full max-w-lg bg-[#280812] border border-gold/40 rounded-3xl shadow-deep-3d overflow-hidden flex flex-col max-h-[85vh]">
         <div className="absolute top-0 right-0 w-48 h-48 bg-gold/15 rounded-full blur-3xl pointer-events-none"></div>
 
         {/* Header */}
@@ -76,11 +83,11 @@ export default function AiStylistModal({ isOpen, onClose }) {
                   Mahalaxmi AI Stylist
                 </h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gold/20 text-gold-light border border-gold/30">
-                  {isGeminiConfigured ? 'Gemini Live' : 'AI Curated'}
+                  {geminiActive ? 'Gemini Live' : 'AI Curated'}
                 </span>
               </div>
               <p className="text-[11px] text-ivory/70">
-                Jewellery styling, saree matching & wholesale lots
+                Jewellery styling, saree matching &amp; wholesale lots
               </p>
             </div>
           </div>
@@ -108,11 +115,8 @@ export default function AiStylistModal({ isOpen, onClose }) {
                     : 'bg-[#37141e]/90 text-ivory border border-gold/30 shadow-floating-card'
                 }`}
               >
-                <div className="whitespace-pre-line">
-                  {msg.text}
-                </div>
+                <div className="whitespace-pre-line">{msg.text}</div>
 
-                {/* Suggested Products list */}
                 {msg.suggestedProducts && msg.suggestedProducts.length > 0 && (
                   <div className="mt-3 pt-2.5 border-t border-gold/20 space-y-2">
                     <p className="text-[10px] uppercase font-bold tracking-wider text-gold-light">
@@ -121,10 +125,10 @@ export default function AiStylistModal({ isOpen, onClose }) {
                     {msg.suggestedProducts.map((p, pIdx) => (
                       <div
                         key={pIdx}
-                        className="bg-black/30 border border-gold/25 rounded-xl p-2 flex items-center justify-between"
+                        className="bg-black/30 border border-gold/25 rounded-xl p-2 flex items-center justify-between gap-2"
                       >
-                        <div>
-                          <div className="text-xs font-serif font-bold text-gold-light">
+                        <div className="min-w-0">
+                          <div className="text-xs font-serif font-bold text-gold-light truncate">
                             {p.name}
                           </div>
                           <div className="text-[10px] text-ivory/70">
@@ -134,7 +138,7 @@ export default function AiStylistModal({ isOpen, onClose }) {
                         <Link
                           to={p.id ? `/product/${p.id}` : (p.category ? `/catalogue?category=${p.category}` : '/catalogue')}
                           onClick={onClose}
-                          className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-gold via-gold-light to-gold text-wine-950 text-[10px] font-bold hover:scale-105 shadow-sm transition"
+                          className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-gold via-gold-light to-gold text-wine-950 text-[10px] font-bold hover:scale-105 shadow-sm transition shrink-0"
                         >
                           View
                         </Link>
@@ -149,7 +153,7 @@ export default function AiStylistModal({ isOpen, onClose }) {
           {loading && (
             <div className="flex items-center space-x-2 text-gold-light text-xs py-2 px-1">
               <span className="w-2 h-2 rounded-full bg-gold animate-ping"></span>
-              <span className="font-serif italic">Consulting master jewellery craftsmen & catalogue...</span>
+              <span className="font-serif italic">Consulting master jewellery craftsmen &amp; catalogue...</span>
             </div>
           )}
         </div>
@@ -190,7 +194,6 @@ export default function AiStylistModal({ isOpen, onClose }) {
             <Send className="w-4 h-4" />
           </button>
         </form>
-
       </div>
     </div>
   );

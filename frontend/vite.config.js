@@ -12,8 +12,8 @@ export default defineConfig({
         name: 'Mahalaxmi Novelties (ಮಹಾಲಕ್ಷ್ಮೀ ನಾವೆಲ್ಟೀಸ್)',
         short_name: 'Mahalaxmi',
         description: 'B2B & B2C Jewellery Wholesale & Retail E-Commerce Platform — Kalaburagi',
-        theme_color: '#D97706',
-        background_color: '#FAF5FF',
+        theme_color: '#280812',
+        background_color: '#280812',
         display: 'standalone',
         orientation: 'portrait-primary',
         start_url: '/',
@@ -35,6 +35,7 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
         navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//, /^\/uploads\//, /^\/requirements\.txt$/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

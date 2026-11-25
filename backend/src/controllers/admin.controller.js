@@ -1,12 +1,15 @@
 const { query, getConnection } = require('../config/db');
 
+const VALID_ORDER_STATUSES = ['pending', 'confirmed', 'processing', 'out_for_delivery', 'delivered', 'cancelled', 'return_requested'];
+const VALID_PAYMENT_STATUSES = ['pending', 'pending_verification', 'paid', 'failed', 'refunded'];
+const VALID_RETURN_STATUSES = ['requested', 'approved', 'rejected', 'completed'];
+
 /**
  * Admin Dashboard Unified Statistics
- * Zero Mock Data — All dynamic from MySQL, defaulting cleanly to 0 / empty arrays
+ * Zero Mock Data — All dynamic from MySQL / Embedded store
  */
 async function getDashboardStats(req, res) {
   try {
-    // 1. Top Row: 4 KPI Cards
     const salesKpiRows = await query(`
       SELECT COALESCE(SUM(total_amount), 0) AS total_sales
       FROM orders
@@ -37,7 +40,6 @@ async function getDashboardStats(req, res) {
     `);
     const customersKpi = customersRows?.[0] || { total_customers: 0 };
 
-    // 2. Middle Row: Sales Overview Area Chart (Monthly & Weekly)
     const monthlySales = await query(`
       SELECT 
         DATE_FORMAT(created_at, '%b %Y') AS period,
@@ -64,7 +66,6 @@ async function getDashboardStats(req, res) {
       ORDER BY sort_key ASC
     `);
 
-    // 3. Middle Row Right: Inventory Status Live Counts
     const invStatusRows = await query(`
       SELECT 
         COUNT(CASE WHEN (COALESCE(i.physical_stock, 0) - COALESCE(i.reserved_stock, 0)) > COALESCE(i.low_stock_threshold, 5) THEN 1 END) AS in_stock,
@@ -77,7 +78,6 @@ async function getDashboardStats(req, res) {
     `);
     const invStatus = invStatusRows?.[0] || { in_stock: 0, low_stock: 0, out_of_stock: 0, total_products: 0 };
 
-    // 4. Lower Middle Row: Top Selling Products
     const topProducts = await query(`
       SELECT 
         p.id,
@@ -89,7 +89,7 @@ async function getDashboardStats(req, res) {
         (
           SELECT image_url FROM product_images
           WHERE product_id = p.id
-          ORDER BY is_primary DESC, id ASC LIMIT 1
+          ORDER BY is_primary DESC, display_order ASC, id ASC LIMIT 1
         ) AS thumbnail
       FROM products p
       INNER JOIN order_items oi ON p.id = oi.product_id
@@ -99,7 +99,6 @@ async function getDashboardStats(req, res) {
       LIMIT 5
     `);
 
-    // 5. Lower Middle Row: Recent Orders
     const recentOrders = await query(`
       SELECT 
         o.id,
@@ -118,7 +117,6 @@ async function getDashboardStats(req, res) {
       LIMIT 6
     `);
 
-    // 6. Lower Middle Row: Shipment Status Donut Data
     const shipmentRows = await query(`
       SELECT 
         COUNT(CASE WHEN order_status = 'delivered' THEN 1 END) AS delivered,
@@ -129,7 +127,6 @@ async function getDashboardStats(req, res) {
     `);
     const shipmentCounts = shipmentRows?.[0] || { delivered: 0, on_delivery: 0, returned: 0, canceled: 0 };
 
-    // 7. Bottom Row: Customer Activity
     const customerTypesRows = await query(`
       SELECT 
         COUNT(CASE WHEN account_type = 'retail' THEN 1 END) AS retail_count,
@@ -140,18 +137,17 @@ async function getDashboardStats(req, res) {
     `);
     const customerTypes = customerTypesRows?.[0] || { retail_count: 0, wholesale_count: 0, new_signups: 0 };
 
-    // 8. Bottom Row: Category Performance
     const categoryPerformance = await query(`
       SELECT 
         c.id,
         c.name_en,
         c.name_kn,
         COUNT(DISTINCT p.id) AS product_count,
-        COALESCE(SUM(oi.subtotal), 0) AS sales_amount
+        COALESCE(SUM(CASE WHEN o.payment_status = 'paid' THEN oi.subtotal ELSE 0 END), 0) AS sales_amount
       FROM categories c
       LEFT JOIN products p ON c.id = p.category_id AND p.is_active = TRUE
       LEFT JOIN order_items oi ON p.id = oi.product_id
-      LEFT JOIN orders o ON oi.order_id = o.id AND o.payment_status = 'paid'
+      LEFT JOIN orders o ON oi.order_id = o.id
       GROUP BY c.id
       ORDER BY c.display_order ASC
     `);
@@ -217,12 +213,11 @@ async function getAllOrders(req, res) {
              d.delivery_status,
              d.delivery_agent_name,
              d.delivery_agent_phone,
-             COUNT(oi.id) AS item_count
+             (SELECT COUNT(*) FROM order_items WHERE order_id = o.id) AS item_count
       FROM orders o
       INNER JOIN users u ON o.user_id = u.id
       LEFT JOIN payments p ON o.id = p.order_id
       LEFT JOIN deliveries d ON o.id = d.order_id
-      LEFT JOIN order_items oi ON o.id = oi.order_id
       WHERE 1=1
     `;
     const params = [];
@@ -241,12 +236,13 @@ async function getAllOrders(req, res) {
       params.push(term, term, term, term);
     }
 
-    sql += ` GROUP BY o.id ORDER BY o.created_at DESC LIMIT ? OFFSET ?`;
-    const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
-    params.push(parseInt(limit, 10), offset);
+    const safeLimit = Math.max(1, parseInt(limit, 10) || 20);
+    const safePage = Math.max(1, parseInt(page, 10) || 1);
+    const offset = (safePage - 1) * safeLimit;
+    sql += ` ORDER BY o.created_at DESC LIMIT ? OFFSET ?`;
+    params.push(safeLimit, offset);
 
     const orders = await query(sql, params);
-
     const [totalRows] = await query(`SELECT COUNT(*) as count FROM orders`);
 
     return res.json({
@@ -269,8 +265,8 @@ async function updateOrderStatus(req, res) {
     const { id } = req.params;
     const { order_status } = req.body;
 
-    if (!order_status) {
-      return res.status(400).json({ success: false, message: 'New order status is required.' });
+    if (!order_status || !VALID_ORDER_STATUSES.includes(order_status)) {
+      return res.status(400).json({ success: false, message: 'Valid order status is required.' });
     }
 
     await conn.beginTransaction();
@@ -284,13 +280,33 @@ async function updateOrderStatus(req, res) {
     const order = orders[0];
     const prevStatus = order.order_status;
 
-    // Transitioning to 'confirmed', 'processing', or 'delivered' from 'pending'
-    // In our hybrid model: 'pending' had stock reserved. If confirmed or delivered,
-    // deduct from physical_stock and clear reserved_stock.
-    if (['confirmed', 'processing', 'out_for_delivery', 'delivered'].includes(order_status) && prevStatus === 'pending') {
+    if (prevStatus === order_status) {
+      await conn.rollback();
+      return res.json({ success: true, message: `Order #${order.order_number} is already ${order_status}.` });
+    }
+
+    if (prevStatus === 'cancelled') {
+      await conn.rollback();
+      return res.status(400).json({
+        success: false,
+        message: 'Cancelled orders cannot be moved back to active fulfillment.'
+      });
+    }
+
+    if (prevStatus === 'delivered' && order_status === 'cancelled') {
+      await conn.rollback();
+      return res.status(400).json({
+        success: false,
+        message: 'Delivered orders cannot be cancelled. Process a return instead.'
+      });
+    }
+
+    const fulfilledStates = ['confirmed', 'processing', 'out_for_delivery', 'delivered'];
+
+    if (fulfilledStates.includes(order_status) && prevStatus === 'pending') {
       const [items] = await conn.execute(`SELECT * FROM order_items WHERE order_id = ?`, [id]);
 
-      for (let item of items) {
+      for (const item of items) {
         const [invRows] = await conn.execute(
           `SELECT physical_stock, reserved_stock FROM inventory WHERE product_id = ? FOR UPDATE`,
           [item.product_id]
@@ -324,22 +340,23 @@ async function updateOrderStatus(req, res) {
           );
         }
       }
-    } else if (order_status === 'cancelled' && prevStatus !== 'cancelled') {
-      // Release reserved stock if was pending
+    } else if (order_status === 'cancelled') {
       const [items] = await conn.execute(`SELECT * FROM order_items WHERE order_id = ?`, [id]);
-      for (let item of items) {
+      for (const item of items) {
         const [invRows] = await conn.execute(
           `SELECT physical_stock, reserved_stock FROM inventory WHERE product_id = ? FOR UPDATE`,
           [item.product_id]
         );
         if (invRows.length > 0) {
           const inv = invRows[0];
+          let newPhysical = inv.physical_stock;
+          let newReserved = inv.reserved_stock;
+
           if (prevStatus === 'pending') {
-            const newReserved = Math.max(0, inv.reserved_stock - item.quantity);
+            newReserved = Math.max(0, inv.reserved_stock - item.quantity);
             await conn.execute(`UPDATE inventory SET reserved_stock = ? WHERE product_id = ?`, [newReserved, item.product_id]);
           } else {
-            // If already deducted physical, restore it
-            const newPhysical = inv.physical_stock + item.quantity;
+            newPhysical = inv.physical_stock + item.quantity;
             await conn.execute(`UPDATE inventory SET physical_stock = ? WHERE product_id = ?`, [newPhysical, item.product_id]);
           }
 
@@ -351,9 +368,9 @@ async function updateOrderStatus(req, res) {
               item.product_id,
               item.quantity,
               inv.physical_stock,
-              inv.physical_stock,
+              newPhysical,
               inv.reserved_stock,
-              inv.reserved_stock,
+              newReserved,
               order.order_number,
               req.user.id,
               `Stock restored/released upon cancellation by admin`
@@ -361,16 +378,19 @@ async function updateOrderStatus(req, res) {
           );
         }
       }
+
+      await conn.execute(
+        `UPDATE payments SET payment_status = 'failed' WHERE order_id = ? AND payment_status != 'paid'`,
+        [id]
+      );
     }
 
     await conn.execute(`UPDATE orders SET order_status = ? WHERE id = ?`, [order_status, id]);
 
-    // Update Delivery status if out for delivery / delivered
     if (order_status === 'out_for_delivery') {
       await conn.execute(`UPDATE deliveries SET delivery_status = 'out_for_delivery', dispatched_at = NOW() WHERE order_id = ?`, [id]);
     } else if (order_status === 'delivered') {
       await conn.execute(`UPDATE deliveries SET delivery_status = 'delivered', delivered_at = NOW() WHERE order_id = ?`, [id]);
-      // If payment was COD, mark as paid upon delivery
       if (order.payment_method === 'cod') {
         await conn.execute(`UPDATE orders SET payment_status = 'paid' WHERE id = ?`, [id]);
         await conn.execute(`UPDATE payments SET payment_status = 'paid', verified_at = NOW() WHERE order_id = ?`, [id]);
@@ -398,8 +418,18 @@ async function updateOrderStatus(req, res) {
 async function verifyPayment(req, res) {
   try {
     const { id } = req.params;
-    const { status = 'paid', remarks } = req.body; // 'paid' or 'failed'
+    const status = req.body.status || req.body.payment_status || 'paid';
+    const { remarks } = req.body;
     const adminId = req.user.id;
+
+    if (!VALID_PAYMENT_STATUSES.includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid payment status.' });
+    }
+
+    const orders = await query(`SELECT id FROM orders WHERE id = ?`, [id]);
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({ success: false, message: 'Order not found.' });
+    }
 
     await query(
       `UPDATE payments
@@ -418,7 +448,7 @@ async function verifyPayment(req, res) {
 
     return res.json({
       success: true,
-      message: status === 'paid' ? 'Payment confirmed and verified successfully!' : 'Payment marked as rejected/failed.'
+      message: status === 'paid' ? 'Payment confirmed and verified successfully!' : `Payment status updated to ${status}.`
     });
   } catch (error) {
     console.error('Verify Payment Error:', error);
@@ -435,7 +465,11 @@ async function getCustomers(req, res) {
 
     let sql = `
       SELECT u.id, u.full_name, u.email, u.phone, u.role, u.account_type, u.is_active, u.created_at,
-             cp.shop_name, cp.gst_number, cp.verification_status, cp.admin_notes, cp.verified_at,
+             MAX(cp.shop_name) AS shop_name,
+             MAX(cp.gst_number) AS gst_number,
+             MAX(cp.verification_status) AS verification_status,
+             MAX(cp.admin_notes) AS admin_notes,
+             MAX(cp.verified_at) AS verified_at,
              COUNT(DISTINCT o.id) AS total_orders,
              COALESCE(SUM(CASE WHEN o.payment_status = 'paid' THEN o.total_amount ELSE 0 END), 0) AS total_spent
       FROM users u
@@ -480,12 +514,24 @@ async function getCustomers(req, res) {
  */
 async function verifyWholesaleCustomer(req, res) {
   try {
-    const { id } = req.params; // user_id
-    const { verification_status, admin_notes } = req.body; // 'approved' or 'rejected'
+    const { id } = req.params;
+    const { verification_status, admin_notes } = req.body;
 
     if (!['approved', 'rejected', 'pending'].includes(verification_status)) {
       return res.status(400).json({ success: false, message: 'Invalid verification status.' });
     }
+
+    const users = await query(`SELECT id, account_type FROM users WHERE id = ?`, [id]);
+    if (!users || users.length === 0) {
+      return res.status(404).json({ success: false, message: 'Customer not found.' });
+    }
+
+    await query(
+      `INSERT INTO customer_profiles (user_id, verification_status)
+       VALUES (?, 'pending')
+       ON DUPLICATE KEY UPDATE user_id = user_id`,
+      [id]
+    );
 
     await query(
       `UPDATE customer_profiles
@@ -533,7 +579,11 @@ async function updateDelivery(req, res) {
     const { id } = req.params;
     const { delivery_agent_name, delivery_agent_phone, delivery_status, tracking_notes } = req.body;
 
-    await query(
+    if (delivery_status && !['assigned', 'picked_up', 'out_for_delivery', 'delivered', 'failed'].includes(delivery_status)) {
+      return res.status(400).json({ success: false, message: 'Invalid delivery status.' });
+    }
+
+    const result = await query(
       `UPDATE deliveries
        SET delivery_agent_name = COALESCE(?, delivery_agent_name),
            delivery_agent_phone = COALESCE(?, delivery_agent_phone),
@@ -542,8 +592,20 @@ async function updateDelivery(req, res) {
            dispatched_at = CASE WHEN ? = 'out_for_delivery' THEN NOW() ELSE dispatched_at END,
            delivered_at = CASE WHEN ? = 'delivered' THEN NOW() ELSE delivered_at END
        WHERE id = ?`,
-      [delivery_agent_name, delivery_agent_phone, delivery_status, tracking_notes, delivery_status, delivery_status, id]
+      [
+        delivery_agent_name ?? null,
+        delivery_agent_phone ?? null,
+        delivery_status ?? null,
+        tracking_notes ?? null,
+        delivery_status ?? null,
+        delivery_status ?? null,
+        id
+      ]
     );
+
+    if (result && result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Delivery record not found.' });
+    }
 
     return res.json({ success: true, message: 'Delivery details updated successfully.' });
   } catch (error) {
@@ -576,16 +638,24 @@ async function getReturns(req, res) {
 async function handleReturn(req, res) {
   try {
     const { id } = req.params;
-    const { status, admin_notes, refund_amount } = req.body; // 'approved', 'rejected', 'completed'
+    const { status, admin_notes, refund_amount } = req.body;
 
-    await query(
+    if (!status || !VALID_RETURN_STATUSES.includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid return status.' });
+    }
+
+    const result = await query(
       `UPDATE returns
        SET status = ?,
            admin_notes = ?,
            refund_amount = COALESCE(?, refund_amount)
        WHERE id = ?`,
-      [status, admin_notes || null, refund_amount, id]
+      [status, admin_notes ?? null, refund_amount ?? null, id]
     );
+
+    if (result && result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Return request not found.' });
+    }
 
     return res.json({ success: true, message: `Return request marked as ${status}.` });
   } catch (error) {

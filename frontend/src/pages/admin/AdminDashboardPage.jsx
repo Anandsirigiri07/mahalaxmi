@@ -156,7 +156,7 @@ export default function AdminDashboardPage() {
               Confirmed Paid Orders
             </p>
           </div>
-          <div className="w-13 h-13 rounded-2xl bg-emerald-600 text-white flex items-center justify-center p-3 shadow-md">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center p-3 shadow-md">
             <IndianRupee className="w-6 h-6 text-emerald-100" />
           </div>
         </div>
@@ -174,7 +174,7 @@ export default function AdminDashboardPage() {
               Placed Today
             </p>
           </div>
-          <div className="w-13 h-13 rounded-2xl bg-sky-600 text-white flex items-center justify-center p-3 shadow-md">
+          <div className="w-12 h-12 rounded-2xl bg-sky-600 text-white flex items-center justify-center p-3 shadow-md">
             <ShoppingBag className="w-6 h-6 text-sky-100" />
           </div>
         </div>
@@ -192,7 +192,7 @@ export default function AdminDashboardPage() {
               At or Below Threshold
             </p>
           </div>
-          <div className="w-13 h-13 rounded-2xl bg-amber-600 text-white flex items-center justify-center p-3 shadow-md">
+          <div className="w-12 h-12 rounded-2xl bg-amber-600 text-white flex items-center justify-center p-3 shadow-md">
             <AlertTriangle className="w-6 h-6 text-amber-100" />
           </div>
         </div>
@@ -210,7 +210,7 @@ export default function AdminDashboardPage() {
               Retail & Wholesale Buyers
             </p>
           </div>
-          <div className="w-13 h-13 rounded-2xl bg-purple-900 text-white flex items-center justify-center p-3 shadow-md">
+          <div className="w-12 h-12 rounded-2xl bg-purple-900 text-white flex items-center justify-center p-3 shadow-md">
             <Users className="w-6 h-6 text-purple-200" />
           </div>
         </div>
@@ -348,10 +348,10 @@ export default function AdminDashboardPage() {
           {/* Full Width Green "Manage Inventory" button */}
           <Link
             to="/admin/inventory"
-            className="w-full py-3.5 px-4 rounded-2xl bg-emerald-850 hover:bg-emerald-900 text-mint-400 font-extrabold text-xs flex items-center justify-center gap-2 shadow-md transition hover:scale-[1.01]"
+            className="w-full py-3.5 px-4 rounded-2xl bg-emerald-900 hover:bg-emerald-950 text-emerald-300 font-extrabold text-xs flex items-center justify-center gap-2 shadow-md transition hover:scale-[1.01]"
           >
             <span>Manage Inventory</span>
-            <ArrowRight className="w-4 h-4 text-mint-400" />
+            <ArrowRight className="w-4 h-4 text-emerald-300" />
           </Link>
         </div>
       </div>

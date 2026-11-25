@@ -38,9 +38,9 @@ export default function EmptyState({
         {isAdmin ? (
           <Link
             to="/admin/products"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-850 hover:bg-emerald-900 text-mint-400 font-semibold text-xs sm:text-sm shadow-md transition"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-900 hover:bg-emerald-950 text-emerald-300 font-semibold text-xs sm:text-sm shadow-md transition"
           >
-            <PlusCircle className="w-4 h-4 text-mint-400" />
+            <PlusCircle className="w-4 h-4 text-emerald-300" />
             <span>Upload First Product</span>
           </Link>
         ) : (

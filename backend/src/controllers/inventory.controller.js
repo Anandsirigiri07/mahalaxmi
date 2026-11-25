@@ -29,7 +29,7 @@ async function getInventoryStatus(req, res) {
              (
                SELECT image_url FROM product_images
                WHERE product_id = p.id
-               ORDER BY is_primary DESC, id ASC LIMIT 1
+               ORDER BY is_primary DESC, display_order ASC, id ASC LIMIT 1
              ) AS primary_image
       FROM products p
       INNER JOIN categories c ON p.category_id = c.id
@@ -62,7 +62,6 @@ async function getInventoryStatus(req, res) {
 
     const inventory = await query(sql, params);
 
-    // Summary counters
     const [counts] = await query(`
       SELECT 
         COUNT(CASE WHEN (COALESCE(i.physical_stock, 0) - COALESCE(i.reserved_stock, 0)) > COALESCE(i.low_stock_threshold, 5) THEN 1 END) AS in_stock,
@@ -102,6 +101,15 @@ async function adjustStock(req, res) {
       return res.status(400).json({ success: false, message: 'Product ID is required.' });
     }
 
+    if (!['add', 'deduct', 'set'].includes(action)) {
+      return res.status(400).json({ success: false, message: 'Action must be add, deduct, or set.' });
+    }
+
+    const qtyChange = parseInt(quantity, 10);
+    if (isNaN(qtyChange) || qtyChange < 0) {
+      return res.status(400).json({ success: false, message: 'Quantity must be a non-negative integer.' });
+    }
+
     await conn.beginTransaction();
 
     const [rows] = await conn.execute(
@@ -112,7 +120,6 @@ async function adjustStock(req, res) {
     let currentInv = rows.length > 0 ? rows[0] : null;
 
     if (!currentInv) {
-      // Create record if not exists
       await conn.execute(
         `INSERT INTO inventory (product_id, physical_stock, reserved_stock, low_stock_threshold)
          VALUES (?, 0, 0, 5)`,
@@ -125,7 +132,6 @@ async function adjustStock(req, res) {
     const prevReserved = currentInv.reserved_stock;
     let newPhysical = prevPhysical;
     let newThreshold = currentInv.low_stock_threshold;
-    const qtyChange = parseInt(quantity || 0, 10);
 
     if (action === 'add') {
       newPhysical = prevPhysical + qtyChange;
@@ -135,8 +141,11 @@ async function adjustStock(req, res) {
       newPhysical = Math.max(0, qtyChange);
     }
 
-    if (low_stock_threshold !== undefined && low_stock_threshold !== null) {
-      newThreshold = Math.max(1, parseInt(low_stock_threshold, 10));
+    if (low_stock_threshold !== undefined && low_stock_threshold !== null && low_stock_threshold !== '') {
+      const parsedThresh = parseInt(low_stock_threshold, 10);
+      if (!isNaN(parsedThresh)) {
+        newThreshold = Math.max(1, parsedThresh);
+      }
     }
 
     await conn.execute(
@@ -149,7 +158,6 @@ async function adjustStock(req, res) {
       [newPhysical, newThreshold, newPhysical, prevPhysical, product_id]
     );
 
-    // Record Audit Log
     const actualDiff = newPhysical - prevPhysical;
     await conn.execute(
       `INSERT INTO inventory_transactions
@@ -218,7 +226,7 @@ async function getInventoryTransactions(req, res) {
     }
 
     sql += ` ORDER BY it.created_at DESC LIMIT ?`;
-    params.push(parseInt(limit, 10));
+    params.push(Math.max(1, parseInt(limit, 10) || 50));
 
     const transactions = await query(sql, params);
 

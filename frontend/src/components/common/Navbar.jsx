@@ -20,12 +20,11 @@ import { usePwa } from '../../context/PwaContext';
 import AiStylistModal from './AiStylistModal';
 
 export default function Navbar() {
-  const { lang, toggleLanguage } = useLanguage();
+  const { lang, toggleLanguage, t } = useLanguage();
   const { user, isAuthenticated, isAdmin, isSupabaseActive } = useAuth();
   const { cart } = useCart();
   const { isInstallable, installApp } = usePwa();
   const [aiModalOpen, setAiModalOpen] = useState(false);
-  const navigate = useNavigate();
   const location = useLocation();
 
   const totalCartCount = cart.items ? cart.items.reduce((sum, item) => sum + (item.quantity || 1), 0) : 0;
@@ -115,13 +114,13 @@ export default function Navbar() {
               to="/" 
               className={`hover:text-gold-light transition ${isActive('/') ? 'text-gold-light border-b border-gold pb-0.5' : 'text-ivory/80'}`}
             >
-              Home
+              {t('nav_home')}
             </Link>
             <Link 
               to="/catalogue" 
               className={`hover:text-gold-light transition ${isActive('/catalogue') ? 'text-gold-light border-b border-gold pb-0.5' : 'text-ivory/80'}`}
             >
-              Catalogue
+              {t('nav_catalogue')}
             </Link>
             <button
               onClick={() => setAiModalOpen(true)}
@@ -233,17 +232,17 @@ export default function Navbar() {
               isActive('/cart') ? 'text-gold-light' : 'text-ivory/60 hover:text-gold-light'
             }`}
           >
-            <div className={`w-9 h-9 rounded-full flex items-center justify-center transition ${
+            <div className={`relative w-9 h-9 rounded-full flex items-center justify-center transition ${
               isActive('/cart') ? 'bg-gradient-to-b from-gold/30 to-gold/10 border border-gold shadow-floating-gold' : ''
             }`}>
               <ShoppingBag className="w-4 h-4" />
               {totalCartCount > 0 && (
-                <span className="absolute top-1 right-3 w-4 h-4 rounded-full bg-gold text-wine-950 font-bold text-[9px] flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gold text-wine-950 font-bold text-[9px] flex items-center justify-center shadow">
                   {totalCartCount}
                 </span>
               )}
             </div>
-            <span className="text-[9px] font-medium tracking-wider mt-0.5">Cart</span>
+            <span className="text-[9px] font-medium tracking-wider mt-0.5">{t('nav_cart')}</span>
           </Link>
 
           {/* 5. Account */}
@@ -259,7 +258,7 @@ export default function Navbar() {
               <User className="w-4 h-4" />
             </div>
             <span className="text-[9px] font-medium tracking-wider mt-0.5">
-              {isAuthenticated ? 'Profile' : 'Login'}
+              {isAuthenticated ? 'Profile' : t('nav_login')}
             </span>
           </Link>
 

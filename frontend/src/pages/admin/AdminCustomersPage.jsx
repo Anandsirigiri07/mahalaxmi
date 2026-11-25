@@ -63,17 +63,27 @@ export default function AdminCustomersPage() {
 
       {/* Filter and Search */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-stone-200">
-        <div className="relative w-full sm:w-80">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && fetchCustomers()}
-            placeholder="Search name, phone, shop..."
-            className="w-full pl-9 pr-4 py-2 rounded-xl border border-stone-300 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none"
-          />
-          <Search className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
-        </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            fetchCustomers();
+          }}
+          className="relative w-full sm:w-96 flex gap-2"
+        >
+          <div className="relative flex-1">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search name, phone, shop..."
+              className="w-full pl-9 pr-4 py-2 rounded-xl border border-stone-300 text-xs sm:text-sm text-stone-900 bg-white focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+            />
+            <Search className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
+          </div>
+          <button type="submit" className="px-4 py-2 rounded-xl bg-emerald-900 text-emerald-200 text-xs font-bold">
+            Search
+          </button>
+        </form>
 
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <select

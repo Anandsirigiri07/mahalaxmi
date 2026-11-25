@@ -87,6 +87,8 @@ CREATE TABLE IF NOT EXISTS products (
     retail_price DECIMAL(10,2) NOT NULL,
     wholesale_price DECIMAL(10,2) NOT NULL,
     moq INT NOT NULL DEFAULT 1, -- Minimum Order Quantity for Wholesale
+    weight_grams DECIMAL(8,2) NULL,
+    purity_finish VARCHAR(120) NULL,
     is_active BOOLEAN DEFAULT TRUE,
     is_featured BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

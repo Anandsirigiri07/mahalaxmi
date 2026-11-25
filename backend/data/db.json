@@ -5,7 +5,7 @@
       "full_name": "Manoharsingh P. Rathore (Proprietor)",
       "email": "manohar@mahalaxminovelties.com",
       "phone": "9481242188",
-      "password_hash": "$2a$10$yeXwzMiGY3S2Ogk3q.iZYuSzgNZck6BapXVmcwySvUYieF.8Q/vC.",
+      "password_hash": "$2a$10$NJvZG2YOEzFe/EHfiWgfR.A0nG7IaONF1FO1h4V4VkdlRpHaxOAv6",
       "role": "admin",
       "account_type": "wholesale",
       "is_active": true,
@@ -16,7 +16,7 @@
       "full_name": "Jajpal Singh (Store Partner)",
       "email": "jajpal@mahalaxminovelties.com",
       "phone": "9880042188",
-      "password_hash": "$2a$10$yeXwzMiGY3S2Ogk3q.iZYuSzgNZck6BapXVmcwySvUYieF.8Q/vC.",
+      "password_hash": "$2a$10$NJvZG2YOEzFe/EHfiWgfR.A0nG7IaONF1FO1h4V4VkdlRpHaxOAv6",
       "role": "admin",
       "account_type": "wholesale",
       "is_active": true,
@@ -59,9 +59,12 @@
   "customer_profiles": [
     {
       "id": 1,
+      "user_id": 4,
       "shop_name": null,
       "gst_number": null,
-      "verification_status": "pending"
+      "verification_status": "pending",
+      "admin_notes": null,
+      "verified_at": null
     }
   ],
   "addresses": [],
@@ -142,7 +145,9 @@
       "weight_grams": 95,
       "purity_finish": "24K Micro-Gold Electroplate",
       "is_active": true,
-      "primary_image": "/assets/products/kada-1250.jpg"
+      "primary_image": "/assets/products/kada-1250.jpg",
+      "moq": 6,
+      "created_at": "2026-11-20T10:00:00.000Z"
     },
     {
       "id": 12,
@@ -158,7 +163,9 @@
       "weight_grams": 42,
       "purity_finish": "Roldgold Guarantee",
       "is_active": true,
-      "primary_image": "/assets/products/bangles-450.jpg"
+      "primary_image": "/assets/products/bangles-450.jpg",
+      "moq": 12,
+      "created_at": "2026-11-20T10:01:00.000Z"
     },
     {
       "id": 13,
@@ -174,7 +181,9 @@
       "weight_grams": 56,
       "purity_finish": "1-Gram Roldgold",
       "is_active": true,
-      "primary_image": "/assets/products/bangles-850.jpg"
+      "primary_image": "/assets/products/bangles-850.jpg",
+      "moq": 6,
+      "created_at": "2026-11-20T10:02:00.000Z"
     },
     {
       "id": 14,
@@ -190,7 +199,9 @@
       "weight_grams": 68,
       "purity_finish": "Antique Matte Finish",
       "is_active": true,
-      "primary_image": "/assets/products/kada-950.jpg"
+      "primary_image": "/assets/products/kada-950.jpg",
+      "moq": 4,
+      "created_at": "2026-11-20T10:03:00.000Z"
     },
     {
       "id": 2,
@@ -206,7 +217,9 @@
       "weight_grams": 82,
       "purity_finish": "24K Micro-Gold Electroplate",
       "is_active": true,
-      "primary_image": "/assets/products/haram-1080.jpg"
+      "primary_image": "/assets/products/haram-1080.jpg",
+      "moq": 4,
+      "created_at": "2026-11-20T10:04:00.000Z"
     },
     {
       "id": 15,
@@ -222,7 +235,9 @@
       "weight_grams": 110,
       "purity_finish": "Antique Temple Gold",
       "is_active": true,
-      "primary_image": "/assets/products/haram-1450.jpg"
+      "primary_image": "/assets/products/haram-1450.jpg",
+      "moq": 3,
+      "created_at": "2026-11-20T10:05:00.000Z"
     },
     {
       "id": 16,
@@ -238,7 +253,9 @@
       "weight_grams": 72,
       "purity_finish": "Antique Matte Finish",
       "is_active": true,
-      "primary_image": "/assets/products/choker-980.jpg"
+      "primary_image": "/assets/products/choker-980.jpg",
+      "moq": 4,
+      "created_at": "2026-11-20T10:06:00.000Z"
     },
     {
       "id": 17,
@@ -254,7 +271,9 @@
       "weight_grams": 125,
       "purity_finish": "24K Micro-Gold Electroplate",
       "is_active": true,
-      "primary_image": "/assets/products/haram-1650.jpg"
+      "primary_image": "/assets/products/haram-1650.jpg",
+      "moq": 2,
+      "created_at": "2026-11-20T10:07:00.000Z"
     },
     {
       "id": 18,
@@ -270,7 +289,9 @@
       "weight_grams": 130,
       "purity_finish": "Agra Chandi Polish",
       "is_active": true,
-      "primary_image": "/assets/products/payal-650.jpg"
+      "primary_image": "/assets/products/payal-650.jpg",
+      "moq": 6,
+      "created_at": "2026-11-20T10:08:00.000Z"
     },
     {
       "id": 19,
@@ -286,7 +307,9 @@
       "weight_grams": 75,
       "purity_finish": "Agra Silver Plated",
       "is_active": true,
-      "primary_image": "/assets/products/payal-350.jpg"
+      "primary_image": "/assets/products/payal-350.jpg",
+      "moq": 10,
+      "created_at": "2026-11-20T10:09:00.000Z"
     },
     {
       "id": 20,
@@ -302,7 +325,9 @@
       "weight_grams": 115,
       "purity_finish": "Agra Chandi Polish",
       "is_active": true,
-      "primary_image": "/assets/products/payal-480.jpg"
+      "primary_image": "/assets/products/payal-480.jpg",
+      "moq": 6,
+      "created_at": "2026-11-20T10:10:00.000Z"
     },
     {
       "id": 21,
@@ -318,7 +343,9 @@
       "weight_grams": 38,
       "purity_finish": "Agra Silver Plated",
       "is_active": true,
-      "primary_image": "/assets/products/payal-220.jpg"
+      "primary_image": "/assets/products/payal-220.jpg",
+      "moq": 12,
+      "created_at": "2026-11-20T10:11:00.000Z"
     },
     {
       "id": 3,
@@ -334,7 +361,9 @@
       "weight_grams": 35,
       "purity_finish": "1-Gram Roldgold",
       "is_active": true,
-      "primary_image": "/assets/products/pendant-650.jpg"
+      "primary_image": "/assets/products/pendant-650.jpg",
+      "moq": 10,
+      "created_at": "2026-11-20T10:12:00.000Z"
     },
     {
       "id": 22,
@@ -350,7 +379,9 @@
       "weight_grams": 85,
       "purity_finish": "Matte Antique Finish",
       "is_active": true,
-      "primary_image": "/assets/products/cz-choker-850.jpg"
+      "primary_image": "/assets/products/cz-choker-850.jpg",
+      "moq": 6,
+      "created_at": "2026-11-20T10:13:00.000Z"
     },
     {
       "id": 23,
@@ -366,7 +397,9 @@
       "weight_grams": 98,
       "purity_finish": "Matte Antique Finish",
       "is_active": true,
-      "primary_image": "/assets/products/matte-set-1150.jpg"
+      "primary_image": "/assets/products/matte-set-1150.jpg",
+      "moq": 4,
+      "created_at": "2026-11-20T10:14:00.000Z"
     },
     {
       "id": 4,
@@ -383,7 +416,9 @@
       "purity_finish": "Roldgold Guarantee",
       "is_active": true,
       "primary_image": "/assets/products/chain-700.jpg",
-      "craft_image": "/assets/products/chain-700-craft.jpg"
+      "craft_image": "/assets/products/chain-700-craft.jpg",
+      "moq": 10,
+      "created_at": "2026-11-20T10:15:00.000Z"
     },
     {
       "id": 5,
@@ -400,7 +435,9 @@
       "purity_finish": "Roldgold Guarantee",
       "is_active": true,
       "primary_image": "/assets/products/chain-1050.jpg",
-      "craft_image": "/assets/products/chain-1050-craft.jpg"
+      "craft_image": "/assets/products/chain-1050-craft.jpg",
+      "moq": 6,
+      "created_at": "2026-11-20T10:16:00.000Z"
     },
     {
       "id": 6,
@@ -417,7 +454,9 @@
       "purity_finish": "1-Gram Roldgold",
       "is_active": true,
       "primary_image": "/assets/products/chain-1200.jpg",
-      "craft_image": "/assets/products/chain-1200-craft.jpg"
+      "craft_image": "/assets/products/chain-1200-craft.jpg",
+      "moq": 6,
+      "created_at": "2026-11-20T10:17:00.000Z"
     },
     {
       "id": 7,
@@ -434,7 +473,9 @@
       "purity_finish": "1-Gram Roldgold",
       "is_active": true,
       "primary_image": "/assets/products/chain-1250.jpg",
-      "craft_image": "/assets/products/chain-1250-craft.jpg"
+      "craft_image": "/assets/products/chain-1250-craft.jpg",
+      "moq": 6,
+      "created_at": "2026-11-20T10:18:00.000Z"
     },
     {
       "id": 8,
@@ -451,7 +492,9 @@
       "purity_finish": "1-Gram Roldgold",
       "is_active": true,
       "primary_image": "/assets/products/chain-1500.jpg",
-      "craft_image": "/assets/products/chain-1500-craft.jpg"
+      "craft_image": "/assets/products/chain-1500-craft.jpg",
+      "moq": 4,
+      "created_at": "2026-11-20T10:19:00.000Z"
     },
     {
       "id": 9,
@@ -468,7 +511,9 @@
       "purity_finish": "Roldgold Guarantee",
       "is_active": true,
       "primary_image": "/assets/products/chain-1550.jpg",
-      "craft_image": "/assets/products/chain-1550-craft.jpg"
+      "craft_image": "/assets/products/chain-1550-craft.jpg",
+      "moq": 4,
+      "created_at": "2026-11-20T10:20:00.000Z"
     },
     {
       "id": 10,
@@ -485,7 +530,9 @@
       "purity_finish": "Roldgold Guarantee",
       "is_active": true,
       "primary_image": "/assets/products/chain-1800.jpg",
-      "craft_image": "/assets/products/chain-1800-craft.jpg"
+      "craft_image": "/assets/products/chain-1800-craft.jpg",
+      "moq": 4,
+      "created_at": "2026-11-20T10:21:00.000Z"
     },
     {
       "id": 11,
@@ -502,7 +549,9 @@
       "purity_finish": "24K Micro-Gold Electroplate",
       "is_active": true,
       "primary_image": "/assets/products/chain-2500.jpg",
-      "craft_image": "/assets/products/chain-2500-craft.jpg"
+      "craft_image": "/assets/products/chain-2500-craft.jpg",
+      "moq": 2,
+      "created_at": "2026-11-20T10:22:00.000Z"
     },
     {
       "id": 24,
@@ -518,7 +567,9 @@
       "weight_grams": 12,
       "purity_finish": "24K Micro-Gold Electroplate",
       "is_active": true,
-      "primary_image": "/assets/products/ring-280.jpg"
+      "primary_image": "/assets/products/ring-280.jpg",
+      "moq": 12,
+      "created_at": "2026-11-20T10:23:00.000Z"
     },
     {
       "id": 25,
@@ -534,7 +585,9 @@
       "weight_grams": 18,
       "purity_finish": "1-Gram Roldgold",
       "is_active": true,
-      "primary_image": "/assets/products/locket-320.jpg"
+      "primary_image": "/assets/products/locket-320.jpg",
+      "moq": 10,
+      "created_at": "2026-11-20T10:24:00.000Z"
     },
     {
       "id": 26,
@@ -550,7 +603,9 @@
       "weight_grams": 22,
       "purity_finish": "24K Micro-Gold Electroplate",
       "is_active": true,
-      "primary_image": "/assets/products/locket-380.jpg"
+      "primary_image": "/assets/products/locket-380.jpg",
+      "moq": 10,
+      "created_at": "2026-11-20T10:25:00.000Z"
     }
   ],
   "product_images": [

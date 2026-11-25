@@ -2,6 +2,8 @@ const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
 const embeddedDb = require('./embeddedDb');
+
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 require('dotenv').config();
 
 const dbConfig = {
@@ -14,12 +16,14 @@ const dbConfig = {
   connectionLimit: 15,
   queueLimit: 0,
   multipleStatements: true,
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  connectTimeout: 4000
 };
 
 let pool = null;
 let isConnected = false;
 let usingFallback = false;
+let initPromise = null;
 
 function getPool() {
   if (!pool && !usingFallback) {
@@ -33,32 +37,24 @@ function getPool() {
 }
 
 /**
- * Execute parameterized query with automatic fallback to persistent embedded DB
+ * Execute parameterized query against active database (MySQL or Embedded JSON store)
  */
 async function query(sql, params = []) {
-  if (isConnected && pool) {
-    try {
-      const [rows] = await pool.execute(sql, params);
-      return rows;
-    } catch (err) {
-      console.warn('MySQL Query Error, falling back to embedded store:', err.message);
-      return embeddedDb.executeQuery(sql, params);
-    }
+  await ensureDbInitialized();
+  if (isConnected && pool && !usingFallback) {
+    const [rows] = await pool.execute(sql, params);
+    return rows;
   }
   return embeddedDb.executeQuery(sql, params);
 }
 
 /**
- * Execute raw SQL
+ * Execute raw SQL (schema/seed scripts)
  */
 async function rawQuery(sql) {
-  if (isConnected && pool) {
-    try {
-      const [result] = await pool.query(sql);
-      return result;
-    } catch (err) {
-      return embeddedDb.executeQuery(sql);
-    }
+  if (isConnected && pool && !usingFallback) {
+    const [result] = await pool.query(sql);
+    return result;
   }
   return embeddedDb.executeQuery(sql);
 }
@@ -67,62 +63,80 @@ async function rawQuery(sql) {
  * Get connection for manual transaction handling
  */
 async function getConnection() {
-  if (isConnected && pool) {
-    try {
-      return await pool.getConnection();
-    } catch (err) {
-      console.warn('MySQL getConnection error, using embedded transaction runner:', err.message);
-      return embeddedDb.createEmbeddedConnection();
-    }
+  await ensureDbInitialized();
+  if (isConnected && pool && !usingFallback) {
+    return await pool.getConnection();
   }
   return embeddedDb.createEmbeddedConnection();
 }
 
 /**
- * Initialize Database
+ * Initialize Database once (safe for both standalone server and serverless functions)
  */
 async function initDatabase() {
-  try {
-    const rootConnection = await mysql.createConnection({
-      host: dbConfig.host,
-      port: dbConfig.port,
-      user: dbConfig.user,
-      password: dbConfig.password,
-      multipleStatements: true
-    });
+  if (initPromise) return initPromise;
 
-    await rootConnection.query(
-      `CREATE DATABASE IF NOT EXISTS \`${dbConfig.database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`
-    );
-    await rootConnection.end();
-
-    const schemaPath = path.resolve(__dirname, '../../../database/schema.sql');
-    const seedPath = path.resolve(__dirname, '../../../database/seed.sql');
-
-    if (fs.existsSync(schemaPath)) {
-      const schemaSql = fs.readFileSync(schemaPath, 'utf8');
-      await rawQuery(schemaSql);
-      console.log('✅ MySQL schema executed.');
+  initPromise = (async () => {
+    // On Vercel serverless without external DB host configured, immediately activate embedded store
+    if (process.env.VERCEL && (!process.env.DB_HOST || process.env.DB_HOST === 'localhost')) {
+      isConnected = false;
+      usingFallback = true;
+      embeddedDb.loadDb();
+      return true;
     }
 
-    if (fs.existsSync(seedPath)) {
-      const seedSql = fs.readFileSync(seedPath, 'utf8');
-      await rawQuery(seedSql);
-      console.log('✅ MySQL core seeds executed.');
-    }
+    try {
+      const rootConnection = await mysql.createConnection({
+        host: dbConfig.host,
+        port: dbConfig.port,
+        user: dbConfig.user,
+        password: dbConfig.password,
+        multipleStatements: true,
+        connectTimeout: 4000
+      });
 
-    isConnected = true;
-    usingFallback = false;
-    console.log(`🚀 Connected to MySQL "${dbConfig.database}" at ${dbConfig.host}:${dbConfig.port}`);
-    return true;
-  } catch (error) {
-    isConnected = false;
-    usingFallback = true;
-    console.log('ℹ️ MySQL database connection bypassed (' + error.message + ').');
-    console.log('✨ Activated Zero-Crash Persistent Embedded Database (`backend/data/db.json`).');
-    console.log('💎 All 6 core categories, Kalaburagi delivery PINs, Admin account, and inventory engine active!');
-    embeddedDb.loadDb();
-    return true;
+      await rootConnection.query(
+        `CREATE DATABASE IF NOT EXISTS \`${dbConfig.database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`
+      );
+      await rootConnection.end();
+
+      pool = mysql.createPool(dbConfig);
+      isConnected = true;
+      usingFallback = false;
+
+      const schemaPath = path.resolve(__dirname, '../../../database/schema.sql');
+      const seedPath = path.resolve(__dirname, '../../../database/seed.sql');
+
+      if (fs.existsSync(schemaPath)) {
+        const schemaSql = fs.readFileSync(schemaPath, 'utf8');
+        await rawQuery(schemaSql);
+        console.log('✅ MySQL schema executed.');
+      }
+
+      if (fs.existsSync(seedPath)) {
+        const seedSql = fs.readFileSync(seedPath, 'utf8');
+        await rawQuery(seedSql);
+        console.log('✅ MySQL core seeds executed.');
+      }
+
+      console.log(`🚀 Connected to MySQL "${dbConfig.database}" at ${dbConfig.host}:${dbConfig.port}`);
+      return true;
+    } catch (error) {
+      isConnected = false;
+      usingFallback = true;
+      console.log('ℹ️ MySQL database connection bypassed (' + error.message + ').');
+      console.log('✨ Activated Zero-Crash Persistent Embedded Database (`backend/data/db.json`).');
+      embeddedDb.loadDb();
+      return true;
+    }
+  })();
+
+  return initPromise;
+}
+
+async function ensureDbInitialized() {
+  if (!isConnected && !usingFallback) {
+    await initDatabase();
   }
 }
 
@@ -132,6 +146,7 @@ module.exports = {
   rawQuery,
   getConnection,
   initDatabase,
+  ensureDbInitialized,
   isDbConnected: () => isConnected,
   isUsingFallback: () => usingFallback
 };

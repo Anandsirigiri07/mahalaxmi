@@ -1,5 +1,32 @@
 const { query, getConnection } = require('../config/db');
 
+function formatCartItems(items) {
+  let subtotal = 0;
+  let itemCount = 0;
+
+  const formatted = items.map(item => {
+    const unitPrice = parseFloat(item.unit_price || 0);
+    const quantity = parseInt(item.quantity, 10) || 1;
+    const lineTotal = unitPrice * quantity;
+    subtotal += lineTotal;
+    itemCount += quantity;
+    return {
+      ...item,
+      id: item.cart_item_id,
+      name: item.name_en,
+      unit_price: unitPrice,
+      price_per_unit: unitPrice,
+      line_total: lineTotal,
+      item_total: lineTotal,
+      is_wholesale: Boolean(item.is_wholesale_pricing),
+      is_wholesale_pricing: Boolean(item.is_wholesale_pricing),
+      min_order_qty: item.moq || 1
+    };
+  });
+
+  return { formatted, subtotal, itemCount };
+}
+
 /**
  * Get Cart items with live product info and stock check
  */
@@ -7,7 +34,10 @@ async function getCart(req, res) {
   try {
     const userId = req.user ? req.user.id : null;
     const sessionId = req.headers['x-session-id'] || req.query.session_id || 'guest';
-    const isWholesaleUser = req.user && req.user.account_type === 'wholesale' && req.user.verification_status === 'approved';
+    const isWholesaleUser = req.user && (
+      req.user.role === 'admin' ||
+      (req.user.account_type === 'wholesale' && req.user.verification_status === 'approved')
+    );
 
     let cart;
     if (userId) {
@@ -30,7 +60,7 @@ async function getCart(req, res) {
       });
     }
 
-    const items = await query(
+    const rawItems = await query(
       `SELECT ci.id AS cart_item_id,
               ci.quantity,
               ci.unit_price,
@@ -48,7 +78,7 @@ async function getCart(req, res) {
               (
                 SELECT image_url FROM product_images
                 WHERE product_id = p.id
-                ORDER BY is_primary DESC, id ASC LIMIT 1
+                ORDER BY is_primary DESC, display_order ASC, id ASC LIMIT 1
               ) AS image_url
        FROM cart_items ci
        INNER JOIN products p ON ci.product_id = p.id
@@ -58,20 +88,14 @@ async function getCart(req, res) {
       [cart.id]
     );
 
-    let subtotal = 0;
-    let itemCount = 0;
-
-    for (let item of items) {
-      subtotal += parseFloat(item.line_total);
-      itemCount += item.quantity;
-    }
+    const { formatted, subtotal, itemCount } = formatCartItems(rawItems);
 
     return res.json({
       success: true,
       cart: {
         id: cart.id,
         cart_type: cart.cart_type,
-        items,
+        items: formatted,
         item_count: itemCount,
         subtotal
       }
@@ -100,9 +124,27 @@ async function addToCart(req, res) {
       return res.status(400).json({ success: false, message: 'Product ID is required.' });
     }
 
+    const parsedQty = parseInt(quantity, 10);
+    if (!Number.isInteger(parsedQty) || parsedQty <= 0) {
+      return res.status(400).json({ success: false, message: 'Quantity must be a positive whole number.' });
+    }
+
+    const isWholesaleVerified = req.user && (
+      req.user.role === 'admin' ||
+      (req.user.account_type === 'wholesale' && req.user.verification_status === 'approved')
+    );
+
+    if (is_wholesale && !isWholesaleVerified) {
+      return res.status(403).json({
+        success: false,
+        message: req.user
+          ? 'Wholesale pricing requires an Admin-approved Wholesale Jeweller account. Please switch to Retail mode or wait for verification.'
+          : 'Wholesale ordering requires signing in with an approved Wholesale Jeweller account. Switch to Retail mode or sign in.'
+      });
+    }
+
     await conn.beginTransaction();
 
-    // Fetch product details
     const [products] = await conn.execute(
       `SELECT p.*, (COALESCE(i.physical_stock, 0) - COALESCE(i.reserved_stock, 0)) AS available_stock
        FROM products p
@@ -127,11 +169,9 @@ async function addToCart(req, res) {
       });
     }
 
-    const isWholesaleVerified = req.user && req.user.account_type === 'wholesale' && req.user.verification_status === 'approved';
-    const effectiveWholesale = is_wholesale && (isWholesaleVerified || (req.user && req.user.role === 'admin'));
-
-    const minQty = effectiveWholesale ? Math.max(product.moq, 1) : 1;
-    let addQty = parseInt(quantity, 10);
+    const effectiveWholesale = Boolean(is_wholesale && isWholesaleVerified);
+    const minQty = effectiveWholesale ? Math.max(product.moq || 1, 1) : 1;
+    let addQty = parsedQty;
 
     if (effectiveWholesale && addQty < minQty) {
       addQty = minQty;
@@ -145,11 +185,9 @@ async function addToCart(req, res) {
       });
     }
 
-    // Determine unit price
-    const unitPrice = effectiveWholesale ? product.wholesale_price : product.retail_price;
+    const unitPrice = effectiveWholesale ? parseFloat(product.wholesale_price) : parseFloat(product.retail_price);
     const targetCartType = effectiveWholesale ? 'wholesale' : 'retail';
 
-    // Find or create cart
     let cartId;
     if (userId) {
       const [userCarts] = await conn.execute(`SELECT id FROM carts WHERE user_id = ?`, [userId]);
@@ -179,7 +217,6 @@ async function addToCart(req, res) {
       }
     }
 
-    // Check if item already in cart
     const [existingItems] = await conn.execute(
       `SELECT id, quantity FROM cart_items WHERE cart_id = ? AND product_id = ?`,
       [cartId, product_id]
@@ -223,6 +260,35 @@ async function addToCart(req, res) {
 }
 
 /**
+ * Verify the caller owns the cart item
+ */
+async function loadOwnedCartItem(cartItemId, req) {
+  const userId = req.user ? req.user.id : null;
+  const sessionId = req.headers['x-session-id'] || 'guest';
+
+  const items = await query(
+    `SELECT ci.*, c.user_id AS cart_user_id, c.session_id AS cart_session_id,
+            p.moq, (COALESCE(i.physical_stock, 0) - COALESCE(i.reserved_stock, 0)) AS available_stock
+     FROM cart_items ci
+     INNER JOIN carts c ON ci.cart_id = c.id
+     INNER JOIN products p ON ci.product_id = p.id
+     LEFT JOIN inventory i ON p.id = i.product_id
+     WHERE ci.id = ?`,
+    [cartItemId]
+  );
+
+  if (!items || items.length === 0) return { error: 404, item: null };
+
+  const item = items[0];
+  const isOwner = userId
+    ? Number(item.cart_user_id) === Number(userId)
+    : (!item.cart_user_id && item.cart_session_id === sessionId);
+
+  if (!isOwner) return { error: 403, item: null };
+  return { error: null, item };
+}
+
+/**
  * Update Cart Item Quantity
  */
 async function updateCartItem(req, res) {
@@ -231,26 +297,23 @@ async function updateCartItem(req, res) {
     const { quantity } = req.body;
     const newQty = parseInt(quantity, 10);
 
+    if (!Number.isInteger(newQty)) {
+      return res.status(400).json({ success: false, message: 'Valid integer quantity is required.' });
+    }
+
+    const { error, item } = await loadOwnedCartItem(id, req);
+    if (error === 404) {
+      return res.status(404).json({ success: false, message: 'Cart item not found.' });
+    }
+    if (error === 403) {
+      return res.status(403).json({ success: false, message: 'Unauthorized cart access.' });
+    }
+
     if (newQty <= 0) {
       await query(`DELETE FROM cart_items WHERE id = ?`, [id]);
       return res.json({ success: true, message: 'Item removed from cart.' });
     }
 
-    // Check available stock & MOQ
-    const items = await query(
-      `SELECT ci.*, p.moq, (COALESCE(i.physical_stock, 0) - COALESCE(i.reserved_stock, 0)) AS available_stock
-       FROM cart_items ci
-       INNER JOIN products p ON ci.product_id = p.id
-       LEFT JOIN inventory i ON p.id = i.product_id
-       WHERE ci.id = ?`,
-      [id]
-    );
-
-    if (items.length === 0) {
-      return res.status(404).json({ success: false, message: 'Cart item not found.' });
-    }
-
-    const item = items[0];
     if (item.is_wholesale_pricing && newQty < item.moq) {
       return res.status(400).json({
         success: false,
@@ -279,6 +342,13 @@ async function updateCartItem(req, res) {
 async function removeCartItem(req, res) {
   try {
     const { id } = req.params;
+    const { error } = await loadOwnedCartItem(id, req);
+    if (error === 404) {
+      return res.status(404).json({ success: false, message: 'Cart item not found.' });
+    }
+    if (error === 403) {
+      return res.status(403).json({ success: false, message: 'Unauthorized cart access.' });
+    }
     await query(`DELETE FROM cart_items WHERE id = ?`, [id]);
     return res.json({ success: true, message: 'Item removed from cart.' });
   } catch (error) {
@@ -297,7 +367,7 @@ async function clearCart(req, res) {
     if (userId) {
       await query(`DELETE ci FROM cart_items ci INNER JOIN carts c ON ci.cart_id = c.id WHERE c.user_id = ?`, [userId]);
     } else {
-      await query(`DELETE ci FROM cart_items ci INNER JOIN carts c ON ci.cart_id = c.id WHERE c.session_id = ?`, [sessionId]);
+      await query(`DELETE ci FROM cart_items ci INNER JOIN carts c ON ci.cart_id = c.id WHERE c.session_id = ? AND c.user_id IS NULL`, [sessionId]);
     }
 
     return res.json({ success: true, message: 'Cart cleared.' });
@@ -306,10 +376,85 @@ async function clearCart(req, res) {
   }
 }
 
+/**
+ * Switch cart pricing mode (retail vs wholesale)
+ */
+async function switchCartMode(req, res) {
+  const conn = await getConnection();
+  try {
+    const { mode } = req.body;
+    if (!['retail', 'wholesale'].includes(mode)) {
+      return res.status(400).json({ success: false, message: 'Mode must be retail or wholesale.' });
+    }
+
+    const userId = req.user ? req.user.id : null;
+    const sessionId = req.headers['x-session-id'] || 'guest';
+    const isWholesaleVerified = req.user && (
+      req.user.role === 'admin' ||
+      (req.user.account_type === 'wholesale' && req.user.verification_status === 'approved')
+    );
+
+    if (mode === 'wholesale' && !isWholesaleVerified) {
+      return res.status(403).json({
+        success: false,
+        message: 'Wholesale cart pricing requires an Admin-approved Wholesale Jeweller account.'
+      });
+    }
+
+    await conn.beginTransaction();
+
+    const [carts] = userId
+      ? await conn.execute(`SELECT id FROM carts WHERE user_id = ? LIMIT 1`, [userId])
+      : await conn.execute(`SELECT id FROM carts WHERE session_id = ? AND user_id IS NULL LIMIT 1`, [sessionId]);
+
+    if (carts.length === 0) {
+      await conn.commit();
+      return res.json({ success: true, message: `Switched to ${mode} mode.` });
+    }
+
+    const cartId = carts[0].id;
+    await conn.execute(`UPDATE carts SET cart_type = ? WHERE id = ?`, [mode, cartId]);
+
+    const [items] = await conn.execute(
+      `SELECT ci.id, ci.quantity, p.retail_price, p.wholesale_price, p.moq,
+              (COALESCE(i.physical_stock, 0) - COALESCE(i.reserved_stock, 0)) AS available_stock
+       FROM cart_items ci
+       INNER JOIN products p ON ci.product_id = p.id
+       LEFT JOIN inventory i ON p.id = i.product_id
+       WHERE ci.cart_id = ?`,
+      [cartId]
+    );
+
+    for (const item of items) {
+      const targetPrice = mode === 'wholesale' ? parseFloat(item.wholesale_price) : parseFloat(item.retail_price);
+      let targetQty = item.quantity;
+      if (mode === 'wholesale') {
+        targetQty = Math.max(targetQty, item.moq || 1);
+        if (targetQty > item.available_stock && item.available_stock > 0) {
+          targetQty = item.available_stock;
+        }
+      }
+      await conn.execute(
+        `UPDATE cart_items SET quantity = ?, unit_price = ?, is_wholesale_pricing = ? WHERE id = ?`,
+        [targetQty, targetPrice, mode === 'wholesale' ? 1 : 0, item.id]
+      );
+    }
+
+    await conn.commit();
+    return res.json({ success: true, message: `Cart switched to ${mode} pricing.` });
+  } catch (error) {
+    await conn.rollback();
+    return res.status(500).json({ success: false, message: error.message });
+  } finally {
+    conn.release();
+  }
+}
+
 module.exports = {
   getCart,
   addToCart,
   updateCartItem,
   removeCartItem,
-  clearCart
+  clearCart,
+  switchCartMode
 };

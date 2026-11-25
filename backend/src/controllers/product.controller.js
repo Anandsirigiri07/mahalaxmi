@@ -2,7 +2,6 @@ const { query, getConnection } = require('../config/db');
 
 /**
  * Get public products with search, category filter, dual pricing, and stock status
- * Returns clean empty array [] when no products are present
  */
 async function getProducts(req, res) {
   try {
@@ -51,16 +50,21 @@ async function getProducts(req, res) {
       params.push(searchTerm, searchTerm, searchTerm, searchTerm);
     }
 
-    if (min_price) {
-      sql += ` AND p.retail_price >= ?`;
-      params.push(parseFloat(min_price));
+    if (min_price !== undefined && min_price !== '') {
+      const minP = parseFloat(min_price);
+      if (!isNaN(minP)) {
+        sql += ` AND p.retail_price >= ?`;
+        params.push(minP);
+      }
     }
-    if (max_price) {
-      sql += ` AND p.retail_price <= ?`;
-      params.push(parseFloat(max_price));
+    if (max_price !== undefined && max_price !== '') {
+      const maxP = parseFloat(max_price);
+      if (!isNaN(maxP)) {
+        sql += ` AND p.retail_price <= ?`;
+        params.push(maxP);
+      }
     }
 
-    // Sorting
     switch (sort) {
       case 'price_asc':
         sql += ` ORDER BY p.retail_price ASC`;
@@ -132,22 +136,25 @@ async function getProductById(req, res) {
 
     const product = products[0];
 
-    // Fetch Images
     const images = await query(
-      `SELECT id, image_url, is_primary, display_order FROM product_images WHERE product_id = ? ORDER BY is_primary DESC, display_order ASC`,
+      `SELECT id, image_url, is_primary, display_order FROM product_images WHERE product_id = ? ORDER BY is_primary DESC, display_order ASC, id ASC`,
       [id]
     );
 
-    // Fetch Variants
     const variants = await query(
       `SELECT * FROM product_variants WHERE product_id = ? AND is_active = TRUE ORDER BY id ASC`,
       [id]
     );
 
+    const primaryImage = product.primary_image || images[0]?.image_url || '/assets/products/kada-1250.jpg';
+    const craftImage = product.craft_image || images[1]?.image_url || null;
+
     return res.json({
       success: true,
       product: {
         ...product,
+        primary_image: primaryImage,
+        craft_image: craftImage,
         images,
         variants
       }
@@ -183,14 +190,33 @@ async function createProduct(req, res) {
       is_featured
     } = req.body;
 
-    if (!category_id || !sku || !name_en || !retail_price || !wholesale_price) {
+    if (!category_id || !sku || !name_en || retail_price === undefined || wholesale_price === undefined) {
       return res.status(400).json({
         success: false,
         message: 'Category, SKU, English Name, Retail Price, and Wholesale Price are required.'
       });
     }
 
-    // Check SKU duplicate
+    const parsedRetail = parseFloat(retail_price);
+    const parsedWholesale = parseFloat(wholesale_price);
+    const parsedMoq = parseInt(moq || 1, 10);
+    const stockQty = parseInt(initial_stock ?? 0, 10);
+    const lowThresh = Math.max(1, parseInt(low_stock_threshold || 5, 10));
+
+    if (isNaN(parsedRetail) || parsedRetail <= 0 || isNaN(parsedWholesale) || parsedWholesale <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Retail and wholesale prices must be positive numbers.'
+      });
+    }
+
+    if (isNaN(parsedMoq) || parsedMoq < 1 || isNaN(stockQty) || stockQty < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'MOQ must be at least 1 and initial stock cannot be negative.'
+      });
+    }
+
     const [existing] = await conn.execute(`SELECT id FROM products WHERE sku = ?`, [sku.trim()]);
     if (existing.length > 0) {
       return res.status(409).json({
@@ -205,22 +231,21 @@ async function createProduct(req, res) {
       `INSERT INTO products (category_id, sku, name_en, name_kn, description_en, description_kn, retail_price, wholesale_price, moq, is_active, is_featured)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE, ?)`,
       [
-        category_id,
+        parseInt(category_id, 10),
         sku.trim(),
         name_en.trim(),
         name_kn ? name_kn.trim() : name_en.trim(),
         description_en || null,
         description_kn || null,
-        parseFloat(retail_price),
-        parseFloat(wholesale_price),
-        parseInt(moq || 1, 10),
+        parsedRetail,
+        parsedWholesale,
+        parsedMoq,
         is_featured === true || is_featured === 'true' ? 1 : 0
       ]
     );
 
     const productId = prodResult.insertId;
 
-    // Handle Uploaded Images
     if (req.files && req.files.length > 0) {
       for (let i = 0; i < req.files.length; i++) {
         const file = req.files[i];
@@ -234,7 +259,6 @@ async function createProduct(req, res) {
       }
     }
 
-    // Handle Variants (e.g. Sizes: 2.4, 2.6, 2.8; Plating: Matte Gold, Micro Plated)
     let parsedVariants = [];
     if (variants) {
       try {
@@ -245,9 +269,9 @@ async function createProduct(req, res) {
     }
 
     if (Array.isArray(parsedVariants)) {
-      for (let v of parsedVariants) {
+      for (const v of parsedVariants) {
         if (v.variant_name) {
-          const varSku = v.sku || `${sku}-${v.variant_name.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+          const varSku = v.sku || `${sku.trim()}-${v.variant_name.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
           await conn.execute(
             `INSERT INTO product_variants (product_id, sku, variant_name, additional_price, stock_quantity, is_active)
              VALUES (?, ?, ?, ?, ?, TRUE)`,
@@ -257,17 +281,12 @@ async function createProduct(req, res) {
       }
     }
 
-    // Initialize Inventory
-    const stockQty = parseInt(initial_stock || 0, 10);
-    const lowThresh = parseInt(low_stock_threshold || 5, 10);
-
     await conn.execute(
       `INSERT INTO inventory (product_id, physical_stock, reserved_stock, low_stock_threshold, last_restocked_at)
        VALUES (?, ?, 0, ?, NOW())`,
       [productId, stockQty, lowThresh]
     );
 
-    // Log Inventory Transaction
     await conn.execute(
       `INSERT INTO inventory_transactions (product_id, transaction_type, quantity, previous_physical_stock, new_physical_stock, previous_reserved_stock, new_reserved_stock, reference_id, created_by_user_id, notes)
        VALUES (?, 'restock', ?, 0, ?, 0, 0, 'INITIAL_UPLOAD', ?, 'Initial stock on product creation')`,
@@ -312,7 +331,14 @@ async function updateProduct(req, res) {
       is_featured
     } = req.body;
 
-    await query(
+    if (retail_price !== undefined && (isNaN(parseFloat(retail_price)) || parseFloat(retail_price) <= 0)) {
+      return res.status(400).json({ success: false, message: 'Retail price must be a positive number.' });
+    }
+    if (wholesale_price !== undefined && (isNaN(parseFloat(wholesale_price)) || parseFloat(wholesale_price) <= 0)) {
+      return res.status(400).json({ success: false, message: 'Wholesale price must be a positive number.' });
+    }
+
+    const result = await query(
       `UPDATE products
        SET category_id = COALESCE(?, category_id),
            name_en = COALESCE(?, name_en),
@@ -325,8 +351,24 @@ async function updateProduct(req, res) {
            is_active = COALESCE(?, is_active),
            is_featured = COALESCE(?, is_featured)
        WHERE id = ?`,
-      [category_id, name_en, name_kn, description_en, description_kn, retail_price, wholesale_price, moq, is_active, is_featured, id]
+      [
+        category_id !== undefined ? parseInt(category_id, 10) : null,
+        name_en ?? null,
+        name_kn ?? null,
+        description_en ?? null,
+        description_kn ?? null,
+        retail_price !== undefined ? parseFloat(retail_price) : null,
+        wholesale_price !== undefined ? parseFloat(wholesale_price) : null,
+        moq !== undefined ? parseInt(moq, 10) : null,
+        is_active !== undefined ? (is_active ? 1 : 0) : null,
+        is_featured !== undefined ? (is_featured ? 1 : 0) : null,
+        id
+      ]
     );
+
+    if (result && result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Product not found.' });
+    }
 
     return res.json({
       success: true,
@@ -348,10 +390,8 @@ async function deleteProduct(req, res) {
   try {
     const { id } = req.params;
 
-    // Check if product exists in orders
     const [orderCheck] = await query(`SELECT COUNT(*) as cnt FROM order_items WHERE product_id = ?`, [id]);
     if (orderCheck && orderCheck.cnt > 0) {
-      // Soft delete
       await query(`UPDATE products SET is_active = FALSE WHERE id = ?`, [id]);
       return res.json({
         success: true,
@@ -359,7 +399,11 @@ async function deleteProduct(req, res) {
       });
     }
 
-    await query(`DELETE FROM products WHERE id = ?`, [id]);
+    const result = await query(`DELETE FROM products WHERE id = ?`, [id]);
+    if (result && result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Product not found.' });
+    }
+
     return res.json({
       success: true,
       message: 'Product deleted permanently.'
@@ -383,7 +427,7 @@ async function uploadProductImages(req, res) {
     }
 
     const [existingCount] = await query(`SELECT COUNT(*) as cnt FROM product_images WHERE product_id = ?`, [id]);
-    let startOrder = existingCount ? existingCount.cnt : 0;
+    const startOrder = existingCount ? existingCount.cnt : 0;
 
     for (let i = 0; i < req.files.length; i++) {
       const file = req.files[i];

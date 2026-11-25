@@ -5,25 +5,10 @@
 --   1. 6 Core Jewellery Categories (Bilingual English/Kannada)
 --   2. Local Kalaburagi Delivery PIN Codes
 --   3. Business Settings & Contact Details
---   4. Default Administrator Account
+-- (No default owner/admin account is seeded.)
 -- ========================================================
 
--- 1. Default Admin Account
--- Email: admin@mahalaxminovelties.com
--- Password: Admin@123
-INSERT INTO users (id, full_name, email, phone, password_hash, role, account_type, is_active)
-VALUES (
-    1,
-    'Manoharsingh P. Rathore (Admin)',
-    'admin@mahalaxminovelties.com',
-    '9481242188',
-    '$2a$10$NJvZG2YOEzFe/EHfiWgfR.A0nG7IaONF1FO1h4V4VkdlRpHaxOAv6',
-    'admin',
-    'wholesale',
-    TRUE
-) ON DUPLICATE KEY UPDATE full_name = VALUES(full_name);
-
--- 2. Six Core Jewellery Categories
+-- 1. Six Core Jewellery Categories
 INSERT INTO categories (id, name_en, name_kn, slug, description_en, description_kn, display_order, is_active)
 VALUES
 (1, 'Matte & C.Z. Jewellery', 'ಮ್ಯಾಟ್ & ಸಿ.ಝಡ್. ಜ್ಯುವೆಲ್ಲರಿ', 'matte-cz-jewellery', 'Premium matte finish and sparkling cubic zirconia bridal sets, choker sets, and temple jewellery.', 'ಪ್ರೀಮಿಯಂ ಮ್ಯಾಟ್ ಫಿನಿಶ್ ಮತ್ತು ಆಕರ್ಷಕ ಸಿ.ಝಡ್. ಬ್ರೈಡಲ್ ಸೆಟ್‌ಗಳು, ಚೋಕರ್‌ಗಳು ಮತ್ತು ದೇವಸ್ಥಾನ ಶೈಲಿಯ ಆಭರಣಗಳು.', 1, TRUE),

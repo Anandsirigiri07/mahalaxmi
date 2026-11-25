@@ -107,21 +107,17 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
-      {/* Proprietor & Partner Executive Header Banner */}
+      {/* Owner Executive Header Banner */}
       <div className="bg-gradient-to-r from-wine-950 via-[#37141e] to-wine-950 border border-gold/40 rounded-3xl p-6 shadow-floating-gold text-ivory flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1.5">
           <div className="inline-flex items-center space-x-2 px-3 py-0.5 rounded-full bg-gold/20 text-gold-light border border-gold/30 text-[11px] font-mono tracking-widest uppercase font-bold">
-            <span>👑 Proprietor &amp; Partner Executive Analysis</span>
+            <span>👑 Store Owner Executive Analysis</span>
           </div>
           <h1 className="font-serif text-2xl sm:text-3xl font-bold text-ivory gold-text-glow">
             Mahalaxmi Novelties Store Dashboard
           </h1>
           <p className="text-xs text-ivory/70 flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span><strong>Proprietor:</strong> Manoharsingh P. Rathore (+91 94812 42188)</span>
-            <span>•</span>
-            <span><strong>Store Partner:</strong> Jajpal Singh (+91 98800 42188)</span>
-            <span>•</span>
-            <span>Sangam Talkies Complex, S.B. Temple Road, Kalaburagi</span>
+            <span>Sangam Talkies Complex, S.B. Temple Road, Kalaburagi - 585 101</span>
           </p>
         </div>
 

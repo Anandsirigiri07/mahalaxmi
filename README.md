@@ -4,7 +4,7 @@
 > **Proprietor:** Manoharsingh P. Rathore  
 > **Business Tagline:** Wholesale Dealers — No Sales Representative  
 > **Direct Contact:** WhatsApp: `+91 98800 42188` | Phone: `+91 94812 42188`  
-> **Default Admin Access:** `admin@mahalaxminovelties.com` / `Admin@123`  
+> **Owner Access:** Restricted to explicitly configured owner credentials  
 
 ---
 
@@ -169,10 +169,8 @@ npm run init-db
 
 ## 🔑 Accessing the Admin Dashboard
 
-1. Navigate to: `http://localhost:5173/login`
-2. Click the **"Auto Fill"** button or enter:
-   - **Email:** `admin@mahalaxminovelties.com`
-   - **Password:** `Admin@123`
+1. Navigate to: `http://localhost:5173/owner` (or `/login`)
+2. Sign in using your explicitly configured Owner Email and Password (no default owner credentials are seeded).
 3. You will be redirected to `/admin/dashboard`, featuring:
    - **Left Sidebar:** Deep Emerald Green (`#064E3B`) with active pill in Bright Mint Green (`#34D399`).
    - **4 Pastel KPI Cards:** Total Sales, Orders Today, Low Stock Items, Total Customers (defaulting cleanly to ₹0 / 0).

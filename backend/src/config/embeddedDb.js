@@ -23,23 +23,9 @@ function resolveDbFilePath() {
 
 const dbFilePath = resolveDbFilePath();
 
-const defaultAdminHash = '$2a$10$NJvZG2YOEzFe/EHfiWgfR.A0nG7IaONF1FO1h4V4VkdlRpHaxOAv6'; // Admin@123
-
 function getInitialData() {
   return {
-    users: [
-      {
-        id: 1,
-        full_name: 'Manoharsingh P. Rathore (Proprietor)',
-        email: 'manohar@mahalaxminovelties.com',
-        phone: '9481242188',
-        password_hash: defaultAdminHash,
-        role: 'admin',
-        account_type: 'wholesale',
-        is_active: true,
-        created_at: new Date().toISOString()
-      }
-    ],
+    users: [],
     customer_profiles: [],
     addresses: [],
     categories: [
@@ -489,8 +475,7 @@ function executeQuery(sql, params = []) {
       }
       if (lowerSql.includes('where u.email = ?') || lowerSql.includes('where email = ?')) {
         const email = String(params[0] || '').trim().toLowerCase();
-        const u = db.users.find(x => x.email.toLowerCase() === email) ||
-          (email === 'admin@mahalaxminovelties.com' ? db.users.find(x => x.role === 'admin' && x.id === 1) : null);
+        const u = db.users.find(x => x.email && x.email.toLowerCase() === email);
         if (!u) return [];
         const cp = db.customer_profiles.find(p => Number(p.user_id) === u.id);
         return [{

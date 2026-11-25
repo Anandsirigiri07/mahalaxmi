@@ -32,7 +32,7 @@ export default function AdminRoute({ children }) {
             Owner Dashboard Restricted
           </h2>
           <p className="text-xs text-ivory/70 leading-relaxed">
-            Sales analytics, gross revenue, and store administration are strictly confidential and accessible only to the registered Store Owner (<strong className="text-gold-light">Manoharsingh P. Rathore</strong>).
+            Sales analytics, gross revenue, and store administration are strictly confidential and accessible only to the authorized Store Owner.
           </p>
           <p className="text-[11px] text-ivory/60">
             Customers and wholesale buyers can only browse novelty jewellery items and place wholesale orders.

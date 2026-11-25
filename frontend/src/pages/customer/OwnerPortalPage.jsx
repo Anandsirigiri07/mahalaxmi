@@ -23,35 +23,23 @@ export default function OwnerPortalPage() {
   const { user, isAdmin, ownerLogin, logout, getOwnerStatus } = useAuth();
   const navigate = useNavigate();
 
-  const [ownerInfo, setOwnerInfo] = useState({
-    name: 'Manoharsingh P. Rathore',
-    title: 'Store Proprietor',
-    phone: '+91 94812 42188'
-  });
-  const [isRegistrationClosed, setIsRegistrationClosed] = useState(true);
+  const [isOwnerRegistered, setIsOwnerRegistered] = useState(null);
   const [pin, setPin] = useState('');
   const [identifier, setIdentifier] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [registerAttemptMsg, setRegisterAttemptMsg] = useState('');
 
   useEffect(() => {
     const checkStatus = async () => {
       try {
         const res = await getOwnerStatus();
         if (res?.success) {
-          setIsRegistrationClosed(res.registrationClosed ?? true);
-          if (res.owner?.name) {
-            setOwnerInfo(prev => ({
-              ...prev,
-              name: res.owner.name,
-              phone: res.owner.phone || prev.phone
-            }));
-          }
+          setIsOwnerRegistered(Boolean(res.isRegistered));
+        } else {
+          setIsOwnerRegistered(false);
         }
       } catch (err) {
-        // Fallback default is locked single owner
-        setIsRegistrationClosed(true);
+        setIsOwnerRegistered(false);
       }
     };
     checkStatus();
@@ -60,11 +48,10 @@ export default function OwnerPortalPage() {
   const handleAccess = async (e) => {
     e.preventDefault();
     setError('');
-    setRegisterAttemptMsg('');
     setLoading(true);
 
     try {
-      const res = await ownerLogin({ identifier, pin });
+      const res = await ownerLogin({ email: identifier, password: pin });
       if (res?.success) {
         navigate('/admin/dashboard');
       } else {
@@ -75,12 +62,6 @@ export default function OwnerPortalPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleRegisterAttempt = () => {
-    setRegisterAttemptMsg(
-      '⚠️ Registration Locked: The Store Owner account has already been registered and secured. Mahalaxmi Novelties enforces strict Single-Owner governance. No other accounts can register in this portal.'
-    );
   };
 
   return (
@@ -112,8 +93,16 @@ export default function OwnerPortalPage() {
               <Lock className="w-4 h-4 text-gold-light" />
             </div>
             <div>
-              <span className="font-semibold text-gold-light block">Owner Account Registered &amp; Secured</span>
-              <span className="text-[11px] text-ivory/60">Registration is permanently closed to all other members</span>
+              <span className="font-semibold text-gold-light block">
+                {isOwnerRegistered === false
+                  ? 'No Owner Account Configured'
+                  : 'Authorized Owner Access Only'}
+              </span>
+              <span className="text-[11px] text-ivory/60">
+                {isOwnerRegistered === false
+                  ? 'All previous owners removed. Owner login is locked until credentials are set.'
+                  : 'Public registration is disabled. Sign in with authorized owner credentials.'}
+              </span>
             </div>
           </div>
           <span className="px-2.5 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-mono text-[10px] font-bold shrink-0">
@@ -191,23 +180,25 @@ export default function OwnerPortalPage() {
         {!user && (
           <div className="bg-[#280812]/95 border border-gold/40 rounded-3xl p-6 sm:p-8 shadow-deep-3d backdrop-blur-xl space-y-6">
             
-            {/* Registered Owner Card */}
+            {/* Owner Portal Header Card */}
             <div className="p-4 rounded-2xl bg-[#17040a] border border-gold/30 relative">
               <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-11 h-11 rounded-full bg-wine-950 border border-gold/60 flex items-center justify-center font-serif font-bold text-gold-light text-sm shadow-floating-gold">
-                    MR
+                    <Crown className="w-5 h-5 text-gold" />
                   </div>
                   <div>
                     <div className="text-sm font-serif font-bold text-ivory">
-                      {ownerInfo.name}
+                      Store Owner Executive Access
                     </div>
                     <div className="text-[11px] text-gold-light font-medium">
-                      Store Proprietor · Exclusive Executive Access
+                      {isOwnerRegistered === false
+                        ? 'Awaiting Authorized Owner Email & Password'
+                        : 'Authorized Email & Password Required'}
                     </div>
                     <div className="flex items-center space-x-1.5 text-[11px] text-ivory/60 mt-0.5">
                       <ShieldCheck className="w-3 h-3 text-gold" />
-                      <span>Single Owner Account Locked &amp; Protected</span>
+                      <span>Registration Disabled · Strict Credential Auth</span>
                     </div>
                   </div>
                 </div>
@@ -218,15 +209,15 @@ export default function OwnerPortalPage() {
               </div>
             </div>
 
-            {error && (
-              <div className="p-3.5 rounded-xl bg-red-950/80 border border-red-500/50 text-red-200 text-xs">
-                {error}
+            {isOwnerRegistered === false && (
+              <div className="p-3.5 rounded-xl bg-amber-950/80 border border-amber-500/50 text-amber-200 text-xs leading-relaxed">
+                No owner credentials are currently configured. All existing owner accounts have been removed, so owner login is disabled until specific credentials are set.
               </div>
             )}
 
-            {registerAttemptMsg && (
-              <div className="p-3.5 rounded-xl bg-amber-950/80 border border-amber-500/50 text-amber-200 text-xs leading-relaxed">
-                {registerAttemptMsg}
+            {error && (
+              <div className="p-3.5 rounded-xl bg-red-950/80 border border-red-500/50 text-red-200 text-xs">
+                {error}
               </div>
             )}
 
@@ -234,31 +225,33 @@ export default function OwnerPortalPage() {
             <form onSubmit={handleAccess} className="space-y-4">
               <div>
                 <label className="block text-xs font-mono uppercase tracking-wider text-gold-light mb-1.5">
-                  Owner Email or Registered Phone:
+                  Owner Email Address:
                 </label>
                 <input
-                  type="text"
+                  type="email"
                   required
+                  disabled={isOwnerRegistered === false}
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="Enter your registered Owner Email or Phone"
-                  className="w-full px-4 py-3 rounded-xl bg-[#140308] border border-gold/40 text-ivory font-mono text-xs focus:border-gold focus:outline-none"
-                  autoComplete="off"
+                  placeholder="Enter authorized Owner Email"
+                  className="w-full px-4 py-3 rounded-xl bg-[#140308] border border-gold/40 text-ivory font-mono text-xs focus:border-gold focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  autoComplete="email"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-mono uppercase tracking-wider text-gold-light mb-1.5">
-                  Owner Secret Passcode / Password:
+                  Owner Password:
                 </label>
                 <div className="relative">
                   <input
                     type="password"
                     required
+                    disabled={isOwnerRegistered === false}
                     value={pin}
                     onChange={(e) => setPin(e.target.value)}
-                    placeholder="Enter Secret Passcode"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#140308] border border-gold/40 text-ivory font-mono text-sm tracking-widest focus:border-gold focus:outline-none"
+                    placeholder="Enter Owner Password"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#140308] border border-gold/40 text-ivory font-mono text-sm tracking-widest focus:border-gold focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     autoComplete="current-password"
                   />
                   <KeyRound className="w-4 h-4 text-gold absolute left-3.5 top-3.5" />
@@ -267,11 +260,11 @@ export default function OwnerPortalPage() {
 
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full py-4 rounded-xl bg-gradient-to-r from-gold via-gold-light to-gold text-wine-950 font-sans font-bold text-xs uppercase tracking-wider shadow-floating-gold hover:scale-[1.01] active:scale-95 transition flex items-center justify-center space-x-2"
+                disabled={loading || isOwnerRegistered === false}
+                className="w-full py-4 rounded-xl bg-gradient-to-r from-gold via-gold-light to-gold text-wine-950 font-sans font-bold text-xs uppercase tracking-wider shadow-floating-gold hover:scale-[1.01] active:scale-95 transition flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <span>Verifying Proprietor Access...</span>
+                  <span>Verifying Owner Access...</span>
                 ) : (
                   <>
                     <Crown className="w-4 h-4" />
@@ -280,18 +273,6 @@ export default function OwnerPortalPage() {
                 )}
               </button>
             </form>
-
-            {/* Registration Disabled Notice & Attempt Button */}
-            <div className="pt-4 border-t border-gold/20 flex items-center justify-between text-xs text-ivory/60">
-              <span className="text-[11px]">Need to register as another member?</span>
-              <button
-                type="button"
-                onClick={handleRegisterAttempt}
-                className="text-[11px] text-gold-light hover:underline font-medium"
-              >
-                Register as Member (Locked)
-              </button>
-            </div>
 
             {/* Quick Analytics Summary Box */}
             <div className="pt-2">

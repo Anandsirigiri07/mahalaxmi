@@ -111,10 +111,10 @@ export default function AdminLayout() {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-bold text-ivory truncate">
-                {user?.full_name || 'Admin'}
+                {user?.full_name || 'Store Owner'}
               </p>
               <p className="text-[10px] text-ivory/50 truncate">
-                {user?.email || 'admin@mahalaxminovelties.com'}
+                {user?.email || ''}
               </p>
             </div>
           </div>
@@ -144,7 +144,7 @@ export default function AdminLayout() {
             <div className="flex items-center space-x-2">
               <span className="w-2 h-2 rounded-full bg-gold animate-pulse"></span>
               <span className="text-xs font-mono text-gold-light uppercase tracking-wider">
-                👑 Manoharsingh P. Rathore &amp; Jajpal Singh · Proprietor Executive
+                👑 Mahalaxmi Novelties · Owner Executive Portal
               </span>
             </div>
           </div>

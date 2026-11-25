@@ -16,7 +16,11 @@ const AuthContext = createContext();
 function readStoredUser() {
   try {
     const saved = localStorage.getItem('mn_user');
-    return saved ? JSON.parse(saved) : null;
+    if (!saved) return null;
+    const parsed = JSON.parse(saved);
+    // Never grant cached admin UI access from localStorage before live /auth/me verification
+    if (parsed?.role === 'admin') return null;
+    return parsed;
   } catch (e) {
     localStorage.removeItem('mn_user');
     return null;
@@ -42,7 +46,7 @@ export const AuthProvider = ({ children }) => {
               email: sbUser.email,
               full_name: sbUser.user_metadata?.full_name || sbUser.email.split('@')[0],
               phone: sbUser.user_metadata?.phone || '',
-              role: sbUser.user_metadata?.role || 'customer',
+              role: 'customer',
               account_type: sbUser.user_metadata?.account_type || (sbUser.user_metadata?.business_name ? 'wholesale' : 'retail'),
               verification_status: sbUser.user_metadata?.is_verified_wholesale ? 'approved' : 'pending',
               shop_name: sbUser.user_metadata?.business_name || '',
@@ -60,7 +64,7 @@ export const AuthProvider = ({ children }) => {
                 email: sbUser.email,
                 full_name: sbUser.user_metadata?.full_name || sbUser.email.split('@')[0],
                 phone: sbUser.user_metadata?.phone || '',
-                role: sbUser.user_metadata?.role || 'customer',
+                role: 'customer',
                 account_type: sbUser.user_metadata?.account_type || (sbUser.user_metadata?.business_name ? 'wholesale' : 'retail'),
                 verification_status: sbUser.user_metadata?.is_verified_wholesale ? 'approved' : 'pending',
                 shop_name: sbUser.user_metadata?.business_name || '',
@@ -88,7 +92,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('mn_user', JSON.stringify(res.data.user));
           }
         } catch (err) {
-          if (err.response?.status === 401) {
+          if (err.response?.status === 401 || err.response?.status === 403) {
             localStorage.removeItem('mn_token');
             localStorage.removeItem('mn_user');
             setUser(null);
@@ -116,7 +120,7 @@ export const AuthProvider = ({ children }) => {
             email: data.user.email,
             full_name: data.user.user_metadata?.full_name || email.split('@')[0],
             phone: data.user.user_metadata?.phone || '',
-            role: data.user.user_metadata?.role || 'customer',
+            role: 'customer',
             account_type: data.user.user_metadata?.business_name ? 'wholesale' : 'retail',
             verification_status: data.user.user_metadata?.is_verified_wholesale ? 'approved' : 'pending'
           };
@@ -151,15 +155,11 @@ export const AuthProvider = ({ children }) => {
       return res.data;
     } catch (err) {
       return {
-        success: true,
-        isRegistered: true,
+        success: false,
+        isRegistered: false,
         registrationClosed: true,
-        owner: {
-          name: 'Manoharsingh P. Rathore (Proprietor)',
-          phone: '******2188',
-          title: 'Store Proprietor'
-        },
-        message: 'Store Owner account is registered. Registration is permanently closed.'
+        owner: null,
+        message: 'Unable to verify owner configuration.'
       };
     }
   }, []);
@@ -174,9 +174,9 @@ export const AuthProvider = ({ children }) => {
         setUser(loggedUser);
         return res.data;
       }
-      throw new Error(res.data.message || 'Owner registration failed.');
+      throw new Error(res.data.message || 'Owner registration is disabled.');
     } catch (apiErr) {
-      const msg = apiErr.response?.data?.message || apiErr.message || 'Owner registration is permanently closed.';
+      const msg = apiErr.response?.data?.message || apiErr.message || 'Owner registration is disabled.';
       throw new Error(msg);
     }
   };
@@ -190,16 +190,19 @@ export const AuthProvider = ({ children }) => {
   };
 
   const ownerLogin = async (credentials) => {
-    const payload = typeof credentials === 'object' && credentials !== null ? credentials : { identifier: '', pin: '' };
-    const cleanId = String(payload.identifier || '').trim();
-    const cleanPin = String(payload.pin || payload.password || '').trim();
+    const payload = typeof credentials === 'object' && credentials !== null ? credentials : {};
+    const cleanEmail = String(payload.email || payload.identifier || '').trim().toLowerCase();
+    const cleanPassword = String(payload.password || payload.pin || '').trim();
 
-    if (!cleanId || !cleanPin) {
-      throw new Error('Please enter both your registered Owner Email/Phone and password.');
+    if (!cleanEmail || !cleanPassword) {
+      throw new Error('Please enter both your authorized Owner Email and Password.');
     }
 
     try {
-      const res = await api.post('/auth/owner-login', { identifier: cleanId, pin: cleanPin });
+      const res = await api.post('/auth/owner-login', {
+        email: cleanEmail,
+        password: cleanPassword
+      });
       if (res.data.success) {
         const { token, user: loggedUser } = res.data;
         localStorage.setItem('mn_token', token);
